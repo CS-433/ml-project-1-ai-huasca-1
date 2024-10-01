@@ -6,10 +6,9 @@ import numpy as np
 data_path = os.path.join(os.getcwd(), 'data')
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 
-# Now x_train, y_train, and x_test are available for use in your linear regression implementation
-print(f"x_train shape: {x_train.shape}")
-print(f"y_train shape: {y_train.shape}")
-print(f"x_test shape: {x_test.shape}")
+# print(f"x_train shape: {x_train.shape}")
+# print(f"y_train shape: {y_train.shape}")
+# print(f"x_test shape: {x_test.shape}")
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
