@@ -3,7 +3,7 @@ from helpers import load_csv_data
 import numpy as np
 
 # Loading the data
-data_path = os.path.join(os.getcwd(), 'data')
+data_path = os.path.join(os.getcwd(), 'dataset')
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 
 # print(f"x_train shape: {x_train.shape}")
