@@ -335,4 +335,4 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
     return losses, ws
 
 
-def logistic_regression(y, tx, initial_w, max_iters, gamma):
+#def logistic_regression(y, tx, initial_w, max_iters, gamma):
