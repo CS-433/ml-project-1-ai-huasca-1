@@ -1,15 +1,14 @@
 import os
 from helpers import load_csv_data
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Loading the data
 data_path = os.path.join(os.getcwd(), 'dataset')
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 
-# print(f"x_train shape: {x_train.shape}")
-# print(f"y_train shape: {y_train.shape}")
-# print(f"x_test shape: {x_test.shape}")
 
+### IMPLEMENTATION 1
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using gradient descent (GD) with MSE as the loss function.
@@ -48,11 +47,8 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     # Return the final weight vector and final loss
     return w, loss
 
-#Importations
-import numpy as np
-import matplotlib.pyplot as plt
 
-###IMPLEMENTATION 2
+### IMPLEMENTATION 2
 
 def compute_loss(y, tx, w):
     """Calculate the loss using MSE.
@@ -224,7 +220,7 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     return ws[-1], losses
 
 
-##Implementation 3 
+### IMPLEMENTATION 3 
 
 def least_squares(y, tx):
     """Calculate the least squares solution.
@@ -256,7 +252,7 @@ def least_squares(y, tx):
 
 
 
-# Implementation 5
+### IMPLEMENTATION ??
 
 def compute_gradient(y, tx, w):
     """Computes the gradient at w.
