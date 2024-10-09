@@ -330,5 +330,32 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
 
     return losses, ws
 
+def sigmoid(z):
+    return z / (1 + np.exp(z))
 
-#def logistic_regression(y, tx, initial_w, max_iters, gamma):
+def logistic_regression(y, tx, initial_w, max_iters, gamma, lambda_):
+    w = initial_w
+    N = len(y)
+
+    
+    for iter in range(max_iters):
+        # Compute prediction
+        pred = sigmoid(tx.dot(w))
+        
+        # Compute the loss with L2 regularization (add 1e-8 to avoid log(0))
+        loss = np.mean((-y @(pred.T) @ w )+ np.log(1 + np.exp(pred.T @ w))) 
+        regul_term = (lambda_ / 2) * np.sum(w**2)  # L2 regularization term
+        loss += regul_term
+
+        # Compute the gradient with L2 regularization
+        gradient = tx.T.dot(pred - y) / len(y)
+        gradient += lambda_ * w  # Regularization gradient
+
+        # Update weights using gradient descent
+        w = w - gamma * gradient
+
+        # Print the loss every 100 iterations
+        if iter % 100 == 0:
+            print(f"Iteration {iter}/{max_iters}, Loss: {loss}")
+
+    return w, loss
