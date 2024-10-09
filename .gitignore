@@ -1,2 +1,4 @@
 dataset/
 _pycache_/
+data/
+.DS_Store
