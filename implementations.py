@@ -4,15 +4,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Loading the data
-data_path = os.path.join(os.getcwd(), 'dataset')
-print(data_path)
-x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
+# data_path = os.path.join(os.getcwd(), 'dataset')
+# print(data_path)
+# x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
+
 
 
 ### IMPLEMENTATION 1
-
-
-## Usefull functions
 
 def compute_loss(y, tx, w):
     """Calculate the loss using either MSE or MAE.
@@ -26,8 +24,6 @@ def compute_loss(y, tx, w):
         the value of the loss (a scalar), corresponding to the input parameters w.
     """
     return np.mean((y - tx.dot(w)) ** 2) / 2
-    #e = y - tx.dot(w)
-    #return (1 / (2 * len(y))) * np.dot(e.T, e)
 
 
 def compute_gradient(y, tx, w):
@@ -41,7 +37,37 @@ def compute_gradient(y, tx, w):
     Returns:
         An numpy array of shape (2, ) (same shape as w), containing the gradient of the loss at w.
     """
-    return -(1/len(y)) * tx.T.dot(y-tx.dot(w))
+    #return -(1/len(y)) * tx.T.dot(y-tx.dot(w))
+    return -tx.T.dot(y - tx.dot(w)) / y.size
+
+
+def gradient_descent(y, tx, initial_w, max_iters, gamma):
+    """The Gradient Descent (GD) algorithm.
+
+    Args:
+        y: numpy array of shape=(N, )
+        tx: numpy array of shape=(N,2)
+        initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of GD
+        gamma: a scalar denoting the stepsize
+
+    Returns:
+        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
+        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD
+    """
+    ws, losses, w = [initial_w], [], initial_w
+    for n_iter in range(max_iters):
+        loss = compute_loss(y, tx, w)
+        w -= gamma * compute_gradient(y, tx, w)
+
+        ws.append(w)
+        losses.append(loss)
+        print(
+            "GD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]
+            )
+        )
+    return losses, ws
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
@@ -58,20 +84,12 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         w: The final weight vector (after GD).
         loss: The final loss (MSE) value.
     """
-    # Initialize the weights
-    w = initial_w
+    # Use the gradient_descent function to perform GD
+    losses, ws = gradient_descent(y, tx, initial_w, max_iters, gamma)
     
-    # Perform gradient descent for max_iters iterations
-    for n_iter in range(max_iters):
-        loss = compute_loss(y, tx, w)
-        gradient = compute_gradient(y, tx, w)
+    # Return the final weight and the final loss
+    return ws[-1], losses[-1]
 
-        w = w - gamma * gradient
-        
-        # Optionally, print the progress for each iteration
-        print(f"Iteration {n_iter+1}/{max_iters}: loss={loss}, w={w}")
-
-    return w, loss
 
 
 ### IMPLEMENTATION 2
@@ -109,11 +127,20 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
     for minibatch_y, minibatch_tx in batch_iter(y, tx, 32):
         <DO-SOMETHING>
     """
-    data_size = len(y)  # NUmber of data points.
+    data_size = len(y)  # Number of data points.
     batch_size = min(data_size, batch_size)  # Limit the possible size of the batch.
-    max_batches = int(
-        data_size / batch_size
-    )  # The maximum amount of non-overlapping batches that can be extracted from the data.
+    max_batches = int(data_size / batch_size)  # Maximum number of non-overlapping batches.
+
+    # if shuffle:
+    #     idxs = np.random.permutation(data_size)  # Shuffle indices
+    # else:
+    #     idxs = np.arange(data_size)
+
+    # for start in range(0, data_size, batch_size):
+    #     end = min(start + batch_size, data_size)
+    #     yield y[idxs[start:end]], tx[idxs[start:end]]
+
+    
     remainder = (
         data_size - max_batches * batch_size
     )  # Points that would be excluded if no overlap is allowed.
@@ -165,27 +192,23 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of SGD
         ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of SGD
     """
-    ws = [initial_w]
-    losses = []
-    w = initial_w
+    ws, losses, w = [initial_w], [], initial_w
 
     for n_iter in range(max_iters):
         for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size):
-            gradient = compute_stoch_gradient(minibatch_y, minibatch_tx, w)
-            
-            w = w - gamma * gradient
-            
-            loss = compute_loss(y, tx, w)
-            
-            ws.append(w)
-            losses.append(loss)
 
-            print(
-                "SGD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
-                    bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]
-                )
+            w -= gamma * compute_stoch_gradient(minibatch_y, minibatch_tx, w)
+
+            losses.append(compute_loss(minibatch_y, minibatch_tx, w))
+            ws.append(w.copy())
+
+        print(
+            "SGD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]
             )
+        )
     return losses, ws
+
 
 def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using stochastic gradient descent
@@ -200,7 +223,6 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         w: numpy array of shape (2,), the final model parameters after SGD optimization.
         losses: list of length max_iters, containing the loss values for each iteration of SGD.
     """
-
     # Call the stochastic_gradient_descent function to perform the SGD optimization
     losses, ws = stochastic_gradient_descent(y, tx, initial_w, batch_size=1, max_iters=max_iters, gamma=gamma)
 
@@ -236,71 +258,100 @@ def least_squares(y, tx):
 
 
 
-### IMPLEMENTATION ??
+### IMPLEMENTATION 4
 
-def gradient_descent(y, tx, initial_w, max_iters, gamma):
-    """The Gradient Descent (GD) algorithm.
+def ridge_regression(y, tx, lambda_):
+    """Implement ridge regression.
 
     Args:
-        y: numpy array of shape=(N, )
-        tx: numpy array of shape=(N,2)
-        initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
-        max_iters: a scalar denoting the total number of iterations of GD
-        gamma: a scalar denoting the stepsize
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+        lambda_: scalar.
 
     Returns:
-        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
-        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD
+        w: optimal weights, numpy array of shape(D,), D is the number of features.
+
+    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 0)
+    array([ 0.21212121, -0.12121212])
+    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 1)
+    array([0.03947092, 0.00319628])
     """
-    ws = [initial_w]
-    losses = []
-    w = initial_w
-
-    for n_iter in range(max_iters):
-        gradient = compute_gradient(y, tx, w)
-        loss = compute_loss(y, tx, w)
-        
-        w = w - gamma * gradient
-
-        ws.append(w)
-        losses.append(loss)
-        print(
-            "GD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
-                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]
-            )
-        )
-
-    return losses, ws
+    # Compute the optimal weights using the normal equation for ridge regression
+    w = np.linalg.solve(tx.T @ tx + lambda_ * np.eye(tx.shape[1]), tx.T @ y)
+    
+    return w
 
 
+
+### IMPLEMENTATION 5
 
 def sigmoid(z):
-    return z / (1 + np.exp(z))
+    return 1 / (1 + np.exp(-z))
 
 
-def logistic_regression(y, tx, initial_w, max_iters, gamma, lambda_):
-    w = initial_w
-    N = len(y)
+def calculate_hessian(y, tx, w):
+    """Return the Hessian of the loss function.
 
+    Args:
+        y: shape=(N, 1)
+        tx: shape=(N, D)
+        w: shape=(D, 1)
+
+    Returns:
+        A Hessian matrix of shape=(D, D)
+    """
+
+    assert y.shape[0] == tx.shape[0]
+    assert tx.shape[1] == w.shape[0]
     
-    for iter in range(max_iters):
-        # Compute prediction
-        pred = sigmoid(tx.dot(w))
+    # Compute the predicted probabilities
+    p = sigmoid(tx.dot(w)).flatten()  # Ensure p is a 1D array
+    # Compute the diagonal elements of Hessian
+    S = np.diag(p * (1 - p))  # Diagonal matrix S
+
+    # Compute the Hessian matrix
+    hessian = tx.T @ S @ tx  # X^T * S * X
+    
+    return hessian
+
+
+def logistic_regression(y, tx, initial_w, max_iters, gamma):
+    """Perform logistic regression using gradient descent.
+
+    Args:
+        y: numpy array of shape (N,), the target values (0 or 1).
+        tx: numpy array of shape (N, D), the input data.
+        initial_w: numpy array of shape (D,), the initial guess for the model parameters.
+        max_iters: integer, the number of iterations for gradient descent.
+        gamma: float, the step size (learning rate) for weight updates.
+
+    Returns:
+        loss: scalar, the final loss value.
+        gradient: numpy array of shape (D,), the final gradient.
+        hessian: numpy array of shape (D, D), the final Hessian matrix.
+    """
+    
+    w = initial_w  # Initialize weights
+    for n_iter in range(max_iters):
+        # Compute the predicted probabilities
+        p = sigmoid(tx.dot(w))  # Shape (N,)
         
-        # Compute the loss with L2 regularization (add 1e-8 to avoid log(0))
-        loss = np.mean((-y @(pred.T) @ w )+ np.log(1 + np.exp(pred.T @ w))) 
-        regul_term = (lambda_ / 2) * np.sum(w**2)  # L2 regularization term
-        loss += regul_term
-
-        # Compute the gradient with L2 regularization
-        gradient = tx.T.dot(pred - y) / len(y)
-        gradient += lambda_ * w  # Regularization gradient
-
+        # Calculate the loss
+        loss = -np.mean(y * np.log(p + 1e-15) + (1 - y) * np.log(1 - p + 1e-15))
+        
+        # Compute the gradient
+        gradient = tx.T.dot(p - y) / y.shape[0]  # Shape (D,)
+        
+        # Compute the Hessian
+        hessian = calculate_hessian(y, tx, w)  # Shape (D, D)
+        
         # Update weights using gradient descent
-        w = w - gamma * gradient
+        w -= gamma * gradient
+        
+        # Optional: Print progress
+        print(f"Iteration {n_iter + 1}/{max_iters}: loss={loss}, gradient={gradient.flatten()}, weights={w.flatten()}")
+    
+    return loss, gradient, hessian
 
-        # Print the loss every 100 iterations
-        if iter % 100 == 0:
-            print(f"Iteration {iter}/{max_iters}, Loss: {loss}")
 
-    return w, loss
+
