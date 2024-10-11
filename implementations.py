@@ -10,6 +10,39 @@ x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 
 ### IMPLEMENTATION 1
 
+
+## Usefull functions
+
+def compute_loss(y, tx, w):
+    """Calculate the loss using either MSE or MAE.
+
+    Args:
+        y: shape=(N, )
+        tx: shape=(N,2)
+        w: shape=(2,). The vector of model parameters.
+
+    Returns:
+        the value of the loss (a scalar), corresponding to the input parameters w.
+    """
+    return np.mean((y - tx.dot(w)) ** 2) / 2
+    #e = y - tx.dot(w)
+    #return (1 / (2 * len(y))) * np.dot(e.T, e)
+
+
+def compute_gradient(y, tx, w):
+    """Computes the gradient at w.
+
+    Args:
+        y: numpy array of shape=(N, )
+        tx: numpy array of shape=(N,2)
+        w: numpy array of shape=(2, ). The vector of model parameters.
+
+    Returns:
+        An numpy array of shape (2, ) (same shape as w), containing the gradient of the loss at w.
+    """
+    return -(1/len(y)) * tx.T.dot(y-tx.dot(w))
+
+
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using gradient descent (GD) with MSE as the loss function.
 
@@ -29,48 +62,18 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     
     # Perform gradient descent for max_iters iterations
     for n_iter in range(max_iters):
-        # Compute the prediction error (residual)
-        e = y - tx.dot(w)
-        
-        # Compute the loss (MSE)
-        loss = np.mean(e ** 2) / 2
-        
-        # Compute the gradient of the loss
-        grad = -tx.T.dot(e) / y.size
-        
-        # Update the weights using gradient descent step
-        w = w - gamma * grad
+        loss = compute_loss(y, tx, w)
+        gradient = compute_gradient(y, tx, w)
+
+        w = w - gamma * gradient
         
         # Optionally, print the progress for each iteration
         print(f"Iteration {n_iter+1}/{max_iters}: loss={loss}, w={w}")
-    
-    # Return the final weight vector and final loss
+
     return w, loss
 
 
 ### IMPLEMENTATION 2
-
-def compute_loss(y, tx, w):
-    """Calculate the loss using MSE.
-
-    Args:
-        y: numpy array of shape (N,)
-        tx: numpy array of shape (N, 2)
-        w: numpy array of shape (2,). The vector of model parameters.
-
-    Returns:
-        mse: scalar, the value of the loss (MSE) corresponding to the input parameters w.
-    """
-    # Compute the predictions (Xw)
-    predictions = tx.dot(w)
-    
-    # Compute the error vector (e = y - Xw)
-    e = y - predictions
-
-    # Compute the Mean Squared Error (MSE)
-    mse = (1 / (2 * len(y))) * np.dot(e.T, e)
-
-    return mse
 
 def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
     """
@@ -131,6 +134,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         )  # The first data point of the following batch
         yield y[start_index:end_index], tx[start_index:end_index]
 
+
 def compute_stoch_gradient(y, tx, w):
     """Compute a stochastic gradient at w from a data sample batch of size B, where B < N, and their corresponding labels.
 
@@ -141,15 +145,9 @@ def compute_stoch_gradient(y, tx, w):
 
     Returns:
         A numpy array of shape (2, ) (same shape as w), containing the stochastic gradient of the loss at w.
-    """
-    # Stochastic gradient computation. It's the same as the usual gradient.
-    # Compute the error vector for the mini-batch
-    e = y - tx.dot(w)
-    
-    # Compute the gradient based on the mini-batch
-    gradient = - (1 / len(y)) * tx.T.dot(e)
-    
-    return gradient
+    """    
+    return compute_gradient(y, tx, w)
+
 
 def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
     """The Stochastic Gradient Descent algorithm (SGD).
@@ -166,29 +164,18 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of SGD
         ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of SGD
     """
-
-    # Define parameters to store w and loss
     ws = [initial_w]
     losses = []
     w = initial_w
 
     for n_iter in range(max_iters):
-        # ***************************************************
-        # INSERT YOUR CODE HERE
-        # TODO: implement stochastic gradient descent.
-        # ***************************************************
-        # Get the next mini-batch using batch_iter() function (assuming it generates mini-batches)
         for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size):
-            # Compute the stochastic gradient using the mini-batch
             gradient = compute_stoch_gradient(minibatch_y, minibatch_tx, w)
             
-            # Update weights using the gradient and step size (gamma)
             w = w - gamma * gradient
             
-            # Compute the loss using Mean Squared Error (MSE) for the current weights
             loss = compute_loss(y, tx, w)
             
-            # Store the updated weights and loss
             ws.append(w)
             losses.append(loss)
 
@@ -220,6 +207,7 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     return ws[-1], losses
 
 
+
 ### IMPLEMENTATION 3 
 
 def least_squares(y, tx):
@@ -237,48 +225,17 @@ def least_squares(y, tx):
     >>> least_squares(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]))
     (array([ 0.21212121, -0.12121212]), 8.666684749742561e-33)
     """
-
-    # returns mse, and optimal weights
     # Compute the optimal weights using the normal equation: w = (X^T X)^{-1} X^T y
     w = np.linalg.solve(tx.T.dot(tx), tx.T.dot(y))  
-    #solves the system  (X^T * X )w = (X^T )y  without explicitly computing the inverse, 
+    # solves the system  (X^T * X )w = (X^T )y  without explicitly computing the inverse, 
     # which is more numerically stable than using np.linalg.inv.
-    
-    # Compute the mean squared error (MSE)
-    e = y - tx.dot(w)  # Error vector
-    mse = (1 / (2 * len(y))) * np.dot(e.T, e)
   
-    return w, mse
+    # returns optimal weights and mse
+    return w, compute_loss(y, tx, w)
 
 
 
 ### IMPLEMENTATION ??
-
-def compute_gradient(y, tx, w):
-    """Computes the gradient at w.
-
-    Args:
-        y: numpy array of shape=(N, )
-        tx: numpy array of shape=(N,2)
-        w: numpy array of shape=(2, ). The vector of model parameters.
-
-    Returns:
-        An numpy array of shape (2, ) (same shape as w), containing the gradient of the loss at w.
-    """
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    # TODO: compute gradient vector
-    predictions = tx.dot(w)
-    
-    # Compute the error vector (e = y - Xw)
-    e = y - predictions
-    N = len(y)
-    
-    # Compute the gradient
-    gradient = -(1/N) * tx.T.dot(e)
-    # ***************************************************
-    #raise NotImplementedError
-    return gradient
 
 def gradient_descent(y, tx, initial_w, max_iters, gamma):
     """The Gradient Descent (GD) algorithm.
@@ -294,32 +251,16 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
         ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD
     """
-    # Define parameters to store w and loss
     ws = [initial_w]
     losses = []
-
-    # Start with the initial weights
     w = initial_w
 
-    #Gradient descent loop
     for n_iter in range(max_iters):
-        # ***************************************************
-        # INSERT YOUR CODE HERE
-        # TODO: compute gradient and loss
-        # Compute the gradient and the loss
         gradient = compute_gradient(y, tx, w)
         loss = compute_loss(y, tx, w)
-        # ***************************************************
-        #raise NotImplementedError
-        # ***************************************************
-        # INSERT YOUR CODE HERE
-        # TODO: update w by gradient
-        # Update the weights using the gradient and step size gamma
+        
         w = w - gamma * gradient
-        # ***************************************************
-        #raise NotImplementedError
 
-        # store w and loss
         ws.append(w)
         losses.append(loss)
         print(
@@ -330,8 +271,11 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
 
     return losses, ws
 
+
+
 def sigmoid(z):
     return z / (1 + np.exp(z))
+    
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma, lambda_):
     w = initial_w
