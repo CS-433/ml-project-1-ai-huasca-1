@@ -204,7 +204,7 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
 
         print(
             "SGD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
-                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]
+                bi=n_iter, ti=max_iters - 1, l=compute_loss(minibatch_y, minibatch_tx, w), w0=w[0], w1=w[1]
             )
         )
     return losses, ws
