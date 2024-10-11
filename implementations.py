@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 # Loading the data
 data_path = os.path.join(os.getcwd(), 'dataset')
+print(data_path)
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 
 
@@ -275,7 +276,7 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
 
 def sigmoid(z):
     return z / (1 + np.exp(z))
-    
+
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma, lambda_):
     w = initial_w
