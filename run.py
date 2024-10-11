@@ -38,7 +38,7 @@ print('Implementation 2: mean_squared_error_sgd \n')
 batch_size = 1  # Size of mini-batch for stochastic updates
 
 # Running stochastic gradient descent with MSE
-w_final_sgd, loss_final_sgd = imp.mean_squared_error_sgd(y_train, x_train, initial_w, max_iters, gamma, batch_size)
+w_final_sgd, loss_final_sgd = imp.mean_squared_error_sgd(y_train, x_train, initial_w, max_iters, gamma)
 
 print(f"Final weights: {w_final_sgd}")
 print(f"Final loss: {loss_final_sgd}")
