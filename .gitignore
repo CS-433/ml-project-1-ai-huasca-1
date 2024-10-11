@@ -1,4 +1,12 @@
-dataset
+# Python
 _pycache_/
-data
-.DS_Store
+
+# .csv
+*.csv/
+data/dataset/*.csv
+data/dataset.zip
+
+dataset/*.csv
+
+# MacOS
+.DS_Store/
