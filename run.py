@@ -31,9 +31,6 @@ def remove_nan_features(array):
 # Clean all arrays by removing columns containing NaN values
 x_train_cleaned = remove_nan_features(x_train)
 x_test_cleaned = remove_nan_features(x_test)
-y_train_cleaned = remove_nan_features(y_train)
-train_ids_cleaned = remove_nan_features(train_ids)
-test_ids_cleaned = remove_nan_features(test_ids)
 print('Data cleaned successfully!')
 
 # Print the shapes of the cleaned arrays to verify the column removal
@@ -43,8 +40,6 @@ print(f"Cleaned shape of x_train: {x_train_cleaned.shape}")
 print(f"Original shape of x_test: {x_test.shape}")
 print(f"Cleaned shape of x_test: {x_test_cleaned.shape}")
 
-print(f"Original shape of y_train: {y_train.shape}")
-print(f"Cleaned shape of y_train: {y_train_cleaned.shape}")
 
 
 # Initial weights (can be zeros, random, or some heuristic value)
@@ -60,7 +55,7 @@ gamma = 0.1  # Learning rate
 print('Implementation 1: mean_squared_error_gd \n')
 
 # Running gradient descent with MSE
-w_final_gd, loss_final_gd = imp.mean_squared_error_gd(y_train_cleaned, x_train_cleaned, initial_w, max_iters, gamma)
+w_final_gd, loss_final_gd = imp.mean_squared_error_gd(y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma)
 
 print(f"Final weights: {w_final_gd}")
 print(f"Final loss: {loss_final_gd}")
@@ -73,7 +68,7 @@ print('Implementation 2: mean_squared_error_sgd \n')
 batch_size = 1  # Size of mini-batch for stochastic updates
 
 # Running stochastic gradient descent with MSE
-w_final_sgd, loss_final_sgd = imp.mean_squared_error_sgd(y_train_cleaned, x_train_cleaned, initial_w, max_iters, gamma)
+w_final_sgd, loss_final_sgd = imp.mean_squared_error_sgd(y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma)
 
 print(f"Final weights: {w_final_sgd}")
 print(f"Final loss: {loss_final_sgd}")
@@ -84,7 +79,7 @@ print(f"Final loss: {loss_final_sgd}")
 print('Implementation 3: least_squares \n')
 
 # Calculate the least squares solution
-w_optimal, mse = imp.least_squares(y_train_cleaned, x_train_cleaned)
+w_optimal, mse = imp.least_squares(y_train.copy(), x_train_cleaned.copy())
 
 print(f"Optimal weights: {w_optimal}")
 print(f"Mean Squared Error: {mse}")
@@ -95,7 +90,7 @@ print(f"Mean Squared Error: {mse}")
 print('Implementation 4: ridge_regression \n')
 
 # Perform ridge regression
-w_final_rr, loss_final_rr = imp.ridge_regression(y_train_cleaned, x_train_cleaned, initial_w, max_iters, gamma)
+w_final_rr, loss_final_rr = imp.ridge_regression(y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma)
 
 print(f"Final weights: {w_final_rr}")
 print(f"Final loss: {loss_final_rr}")
@@ -106,7 +101,7 @@ print(f"Final loss: {loss_final_rr}")
 print('Implementation 5: logistic_regression \n')
 
 # Perform logistic regression
-w_final_lr, loss_final_lr = imp.logistic_regression(y_train_cleaned, x_train_cleaned, initial_w, max_iters, gamma)
+w_final_lr, loss_final_lr = imp.logistic_regression(y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma)
 
 print(f"Final weights: {w_final_lr}")
 print(f"Final loss: {loss_final_lr}")
@@ -121,7 +116,7 @@ lambda_ = 0.1  # Regularization parameter
 gamma = 0.01  # Learning rate
 
 # Perform regularized logistic regression
-w_final_rlr, loss_final_rlr = imp.reg_logistic_regression(y_train_cleaned, x_train_cleaned, lambda_, initial_w, max_iters, gamma)
+w_final_rlr, loss_final_rlr = imp.reg_logistic_regression(y_train.copy(), x_train_cleaned.copy(), lambda_, initial_w.copy(), max_iters, gamma)
 
 print(f"Final weights: {w_final_rlr}")
 print(f"Final loss: {loss_final_rlr}")

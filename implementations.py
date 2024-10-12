@@ -3,12 +3,6 @@ from helpers import load_csv_data
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Loading the data
-# data_path = os.path.join(os.getcwd(), 'dataset')
-# print(data_path)
-# x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
-
-
 
 ### IMPLEMENTATION 1
 
@@ -104,38 +98,29 @@ def batch_iter(y, tx, batch_size=1, num_batches=1, shuffle=True):
     Data can be randomly shuffled to avoid ordering in the original data messing with the randomness of the minibatches.
     """
     data_size = len(y)  # Number of data points.
-    # batch_size = min(data_size, batch_size)  # Limit the possible size of the batch.
-    # max_batches = int(data_size / batch_size)  # Maximum number of non-overlapping batches.
+    batch_size = min(data_size, batch_size)  # Limit the possible size of the batch.
+    max_batches = int(data_size / batch_size)  # Maximum number of non-overlapping batches.
+
+    remainder = (
+        data_size - max_batches * batch_size
+    )  # Points that would be excluded if no overlap is allowed.
 
     if shuffle:
-        idxs = np.random.permutation(data_size)  # Shuffle indices
+        # Generate an array of indexes indicating the start of each batch
+        idxs = np.random.randint(max_batches, size=num_batches) * batch_size
+        if remainder != 0:
+            # Add an random offset to the start of each batch to eventually consider the remainder points
+            idxs += np.random.randint(remainder + 1, size=num_batches)
     else:
-        idxs = np.arange(data_size)
+        # If no shuffle is done, the array of indexes is circular.
+        idxs = np.array([i % max_batches for i in range(num_batches)]) * batch_size
 
-    for start in range(0, data_size, batch_size):
-        end = min(start + batch_size, data_size)
-        yield y[idxs[start:end]], tx[idxs[start:end]]
-
-    # remainder = (
-    #     data_size - max_batches * batch_size
-    # )  # Points that would be excluded if no overlap is allowed.
-
-    # if shuffle:
-    #     # Generate an array of indexes indicating the start of each batch
-    #     idxs = np.random.randint(max_batches, size=num_batches) * batch_size
-    #     if remainder != 0:
-    #         # Add an random offset to the start of each batch to eventually consider the remainder points
-    #         idxs += np.random.randint(remainder + 1, size=num_batches)
-    # else:
-    #     # If no shuffle is done, the array of indexes is circular.
-    #     idxs = np.array([i % max_batches for i in range(num_batches)]) * batch_size
-
-    # for start in idxs:
-    #     start_index = start  # The first data point of the batch
-    #     end_index = (
-    #         start_index + batch_size
-    #     )  # The first data point of the following batch
-    #     yield y[start_index:end_index], tx[start_index:end_index]
+    for start in idxs:
+        start_index = start  # The first data point of the batch
+        end_index = (
+            start_index + batch_size
+        )  # The first data point of the following batch
+        yield y[start_index:end_index], tx[start_index:end_index]
 
 
 def compute_stoch_gradient(y, tx, w):
@@ -185,7 +170,7 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
     w = initial_w
 
     for n_iter in range(max_iters):
-        for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size=1):
+        for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size):
             w -= gamma * compute_stoch_gradient(minibatch_y, minibatch_tx, w)
 
     return w, compute_loss(y, tx, w)
@@ -204,7 +189,7 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         w: numpy array of shape (2,), the final model parameters after SGD optimization.
         losses: list of length max_iters, containing the loss values for each iteration of SGD.
     """
-    return stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma)
+    return stochastic_gradient_descent(y, tx, initial_w, batch_size=1, max_iters=max_iters, gamma=gamma)
 
 
 
