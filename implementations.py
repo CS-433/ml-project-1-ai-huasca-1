@@ -185,10 +185,12 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
     w = initial_w
 
     for n_iter in range(max_iters):
-        for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size=1):
+        for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size):
             w -= gamma * compute_stoch_gradient(minibatch_y, minibatch_tx, w)
 
-    return w, compute_loss(y, tx, w)
+    loss = compute_loss(y, tx, w)
+
+    return w, loss
 
 
 def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
