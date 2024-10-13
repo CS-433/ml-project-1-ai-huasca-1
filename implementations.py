@@ -23,7 +23,8 @@ def compute_loss(y, tx, w):
     Returns:
         the value of the loss (a scalar), corresponding to the input parameters w.
     """
-    return np.mean((y - tx.dot(w)) ** 2) / 2
+    mse = np.mean((y - tx.dot(w)) ** 2) / 2
+    return mse
 
 
 def compute_gradient(y, tx, w):
@@ -38,7 +39,9 @@ def compute_gradient(y, tx, w):
         An numpy array of shape (D,) (same shape as w), containing the gradient of the loss at w.
     """
     #return -(1/len(y)) * tx.T.dot(y-tx.dot(w))
-    return -tx.T.dot(y - tx.dot(w)) / y.size
+    gradient = -tx.T.dot(y - tx.dot(w)) / y.size
+
+    return gradient
 
 
 def gradient_descent(y, tx, initial_w, max_iters, gamma):
@@ -73,7 +76,9 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
     for n_iter in range(max_iters): #while?
         w -= gamma * compute_gradient(y, tx, w)
 
-    return w, compute_loss(y, tx, w)
+    loss = compute_loss(y, tx, w)
+
+    return w, loss
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
@@ -90,7 +95,9 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         w: The final weight vector (after GD).
         loss: The final loss (MSE) value.
     """
-    return gradient_descent(y, tx, initial_w, max_iters, gamma)
+
+    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma)
+    return w, loss
 
 
 
@@ -149,7 +156,9 @@ def compute_stoch_gradient(y, tx, w):
     Returns:
         A numpy array of shape (D,) (same shape as w), containing the stochastic gradient of the loss at w.
     """    
-    return compute_gradient(y, tx, w)
+
+    stoch_gradient = compute_gradient(y, tx, w)
+    return stoch_gradient
 
 
 def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
@@ -206,7 +215,9 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         w: numpy array of shape (2,), the final model parameters after SGD optimization.
         losses: list of length max_iters, containing the loss values for each iteration of SGD.
     """
-    return stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma)
+
+    w, loss = stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma)
+    return w, loss
 
 
 
@@ -229,7 +240,8 @@ def least_squares(y, tx):
     """
     # Compute the optimal weights using the normal equation: w = (X^T X)^{-1} X^T y
     w = np.linalg.solve(tx.T @ tx, tx.T @ y)  # Using solve for stability
-    return w, compute_loss(y, tx, w)
+    loss = compute_loss(y, tx, w)
+    return w, loss
 
 
 
@@ -253,8 +265,9 @@ def ridge_regression(y, tx, lambda_):
     """
     # Compute the optimal weights using the normal equation for ridge regression
     w = np.linalg.solve(tx.T @ tx + lambda_ * np.eye(tx.shape[1]), tx.T @ y)
+    loss = compute_loss(y, tx, w)
     
-    return w, compute_loss(y, tx, w)
+    return w, loss
 
 
 
