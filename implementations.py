@@ -293,12 +293,16 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         hessian: numpy array of shape (D, D), the final Hessian matrix.
     """
     w = initial_w  # Initialize weights
+
+    best_loss = np.inf  
     for n_iter in range(max_iters):
         # Compute the predicted probabilities
         p = sigmoid(tx.dot(w))  # Shape (N,)
         
         # Calculate the loss
         loss = -np.mean(y * np.log(p + 1e-15) + (1 - y) * np.log(1 - p + 1e-15))
+
+        best_loss = loss
         
         # Compute the gradient
         gradient = tx.T.dot(p - y) / y.shape[0]  # Shape (D,)
@@ -329,6 +333,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """
     w = initial_w  # Initialize weights
 
+    best_loss = np.inf
+
     for n_iter in range(max_iters):
         # Compute predicted probabilities (sigmoid)
         p = sigmoid(tx.dot(w))  # Shape (N,)
@@ -339,6 +345,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         reg_term = lambda_ * np.sum(w**2)
         loss += reg_term
 
+        best_loss = loss
+
         # Compute the gradient of the loss
         gradient = tx.T.dot(p - y) / y.shape[0]  # Shape (D,)
         # Add regularization to the gradient
@@ -348,4 +356,4 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         w -= gamma * gradient
 
     # Return the final weights and loss (without regularization term)
-    return w, loss
+    return w, best_loss
