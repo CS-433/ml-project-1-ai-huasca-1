@@ -273,8 +273,153 @@ def ridge_regression(y, tx, lambda_):
 
 ### IMPLEMENTATION 5
 
-def sigmoid(z):
-    return 1 / (1 + np.exp(-z))
+def sigmoid(t):
+    """apply sigmoid function on t.
+
+    Args:
+        t: scalar or numpy array
+
+    Returns:
+        scalar or numpy array
+
+    >>> sigmoid(np.array([0.1]))
+    array([0.52497919])
+    >>> sigmoid(np.array([0.1, 0.1]))
+    array([0.52497919, 0.52497919])
+    """
+    # raise NotImplementedError
+    sigmoid_function = 1/(1+np.exp(-t))
+
+    return sigmoid_function
+
+def calculate_loss_sigmoid(y, tx, w):
+    """compute the cost by negative log likelihood.
+
+    Args:
+        y:  shape=(N, 1)
+        tx: shape=(N, D)
+        w:  shape=(D, 1)
+
+    Returns:
+        a non-negative loss
+
+    >>> y = np.c_[[0., 1.]]
+    >>> tx = np.arange(4).reshape(2, 2)
+    >>> w = np.c_[[2., 3.]]
+    >>> round(calculate_loss(y, tx, w), 8)
+    1.52429481
+    """
+    assert y.shape[0] == tx.shape[0]
+    assert tx.shape[1] == w.shape[0]
+
+    # ***************************************************
+    # INSERT YOUR CODE HERE
+    # TODO
+
+    loss = -np.mean(y * np.log(sigmoid(np.dot(tx, w))) + (1 - y) * np.log(1 - sigmoid(np.dot(tx, w))))
+    # ***************************************************
+    # raise NotImplementedError
+    return loss
+
+def calculate_gradient_sigmoid(y, tx, w):
+    """compute the gradient of loss.
+
+    Args:
+        y:  shape=(N, 1)
+        tx: shape=(N, D)
+        w:  shape=(D, 1)
+
+    Returns:
+        a vector of shape (D, 1)
+
+    >>> np.set_printoptions(8)
+    >>> y = np.c_[[0., 1.]]
+    >>> tx = np.arange(6).reshape(2, 3)
+    >>> w = np.array([[0.1], [0.2], [0.3]])
+    >>> calculate_gradient(y, tx, w)
+    array([[-0.10370763],
+           [ 0.2067104 ],
+           [ 0.51712843]])
+    """
+    # ***************************************************
+    # INSERT YOUR CODE HERE
+    # TODO
+    
+    gradient = np.dot(tx.T, sigmoid(np.dot(tx, w)) - y) / y.shape[0]
+    # ***************************************************
+    # raise NotImplementedError("Calculate gradient")
+    return gradient
+
+def calculate_hessian(y, tx, w):
+    """return the Hessian of the loss function.
+
+    Args:
+        y:  shape=(N, 1)
+        tx: shape=(N, D)
+        w:  shape=(D, 1)
+
+    Returns:
+        a hessian matrix of shape=(D, D)
+
+    >>> y = np.c_[[0., 1.]]
+    >>> tx = np.arange(6).reshape(2, 3)
+    >>> w = np.array([[0.1], [0.2], [0.3]])
+    >>> calculate_hessian(y, tx, w)
+    array([[0.28961235, 0.3861498 , 0.48268724],
+           [0.3861498 , 0.62182124, 0.85749269],
+           [0.48268724, 0.85749269, 1.23229813]])
+    """
+    # ***************************************************
+    N = tx.shape[0]  # Number of samples
+    Xw = tx.dot(w)   # Compute Xw (dot product of tx and w)
+    
+    # Compute the sigmoid values
+    sigma_Xw = sigmoid(Xw)
+    
+    # Create the diagonal matrix S with shape (N, N)
+    S = np.diagflat(sigma_Xw * (1 - sigma_Xw))
+    
+    # Compute the Hessian matrix: (1/N) * tx.T @ S @ tx
+    H = (1 / N) * tx.T @ S @ tx
+    
+    return H
+
+def learning_by_gradient_descent(y, tx, w, gamma):
+    """
+    Do one step of gradient descent using logistic regression. Return the loss and the updated w.
+
+    Args:
+        y:  shape=(N, 1)
+        tx: shape=(N, D)
+        w:  shape=(D, 1)
+        gamma: float
+
+    Returns:
+        loss: scalar number
+        w: shape=(D, 1)
+
+    >>> y = np.c_[[0., 1.]]
+    >>> tx = np.arange(6).reshape(2, 3)
+    >>> w = np.array([[0.1], [0.2], [0.3]])
+    >>> gamma = 0.1
+    >>> loss, w = learning_by_gradient_descent(y, tx, w, gamma)
+    >>> round(loss, 8)
+    0.62137268
+    >>> w
+    array([[0.11037076],
+           [0.17932896],
+           [0.24828716]])
+    """
+    # ***************************************************
+    # INSERT YOUR CODE HERE
+
+    loss = calculate_loss_sigmoid(y, tx, w)
+    gradient = calculate_gradient_sigmoid(y, tx, w)
+    w = w - gamma * gradient
+    # TODO
+    # ***************************************************
+    # raise NotImplementedError
+    return loss, w
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
@@ -292,25 +437,22 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         gradient: numpy array of shape (D,), the final gradient.
         hessian: numpy array of shape (D, D), the final Hessian matrix.
     """
-    w = initial_w  # Initialize weights
 
-    best_loss = np.inf  
-    for n_iter in range(max_iters):
-        # Compute the predicted probabilities
-        p = sigmoid(tx.dot(w))  # Shape (N,)
-        
-        # Calculate the loss
-        loss = -np.mean(y * np.log(p + 1e-15) + (1 - y) * np.log(1 - p + 1e-15))
+    loss = np.inf
+    w = initial_w
 
-        best_loss = loss
+    for iter in range(max_iters):
+        # get loss and update w.
+        loss, w = learning_by_gradient_descent(y, tx, w, gamma)
+        # log info
+        if iter % 100 == 0:
+            print("Current iteration={i}, loss={l}".format(i=iter, l=loss))
         
-        # Compute the gradient
-        gradient = tx.T.dot(p - y) / y.shape[0]  # Shape (D,)
-        
-        # Update weights using gradient descent
-        w -= gamma * gradient
+    hessian = calculate_hessian(y, tx, w)
+    gradient = calculate_gradient_sigmoid(y, tx, w)
+
+    return loss, gradient, hessian
     
-    return w, loss
 
 
 
