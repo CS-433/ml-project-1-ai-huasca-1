@@ -219,7 +219,7 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         losses: list of length max_iters, containing the loss values for each iteration of SGD.
     """
 
-    w, loss = stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma)
+    w, loss = stochastic_gradient_descent(y, tx, initial_w, 1 ,max_iters, gamma)
     return w, loss
 
 ### IMPLEMENTATION 3 
