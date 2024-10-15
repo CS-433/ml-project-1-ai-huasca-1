@@ -376,10 +376,10 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 
     for iter in range(max_iters):
         # get loss and update w.
-        w = learning_by_gradient_descent(y, tx, w, gamma)[0]
+        w, loss_iter = learning_by_gradient_descent(y, tx, w, gamma)
         # log info
         if iter % 100 == 0:
-            print("Current iteration={i}, loss={l}".format(i=iter, l=loss))
+            print("Current iteration={i}, loss={l}".format(i=iter, l=loss_iter))
     loss = calculate_loss_sigmoid(y, tx, w)
 
     return w, loss
