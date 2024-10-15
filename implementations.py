@@ -60,8 +60,10 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
     """
 
     ws = [initial_w]
-    losses = []
+    initial_loss = compute_loss(y, tx, initial_w)
+    losses = [initial_loss]
     w = initial_w
+
     for n_iter in range(max_iters):
         gradient = compute_gradient(y, tx, w)
         loss = compute_loss(y, tx, w)
