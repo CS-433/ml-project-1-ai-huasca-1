@@ -139,9 +139,6 @@ def compute_stoch_gradient(y, tx, w):
     e = y - predictions
 
     stoch_gradient = -(1 / y.size) * np.dot(tx.T, e)
-    # TODO: implement stochastic gradient computation. It's the same as the usual gradient.
-    # ***************************************************
-    # raise NotImplementedError
     return stoch_gradient
 
 
@@ -441,3 +438,4 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
     # Return the final weights and loss (without regularization term)
     return w, best_loss
+
