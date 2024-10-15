@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 # x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 
 
-
 ### IMPLEMENTATION 1
+
 
 def compute_loss(y, tx, w):
     """Calculate the loss using either MSE or MAE.
@@ -38,7 +38,7 @@ def compute_gradient(y, tx, w):
     Returns:
         An numpy array of shape (D,) (same shape as w), containing the gradient of the loss at w.
     """
-    #return -(1/len(y)) * tx.T.dot(y-tx.dot(w))
+
     gradient = -tx.T.dot(y - tx.dot(w)) / y.size
 
     return gradient
@@ -92,14 +92,16 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         loss: The final loss (MSE) value.
     """
 
-    losses,ws = gradient_descent(y, tx, initial_w, max_iters, gamma)
+    losses, ws = gradient_descent(y, tx, initial_w, max_iters, gamma)
     loss = losses[-1]
     w = ws[-1]
     return w, loss
 
+
 ### IMPLEMENTATION 2
 
-def batch_iter(y, tx, batch_size=1, num_batches=1, shuffle=True):
+
+def batch_iter(y, tx, batch_size, shuffle=True):
     """
     Generate a minibatch iterator for a dataset.
     Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
@@ -119,27 +121,6 @@ def batch_iter(y, tx, batch_size=1, num_batches=1, shuffle=True):
         end = min(start + batch_size, data_size)
         yield y[idxs[start:end]], tx[idxs[start:end]]
 
-    # remainder = (
-    #     data_size - max_batches * batch_size
-    # )  # Points that would be excluded if no overlap is allowed.
-
-    # if shuffle:
-    #     # Generate an array of indexes indicating the start of each batch
-    #     idxs = np.random.randint(max_batches, size=num_batches) * batch_size
-    #     if remainder != 0:
-    #         # Add an random offset to the start of each batch to eventually consider the remainder points
-    #         idxs += np.random.randint(remainder + 1, size=num_batches)
-    # else:
-    #     # If no shuffle is done, the array of indexes is circular.
-    #     idxs = np.array([i % max_batches for i in range(num_batches)]) * batch_size
-
-    # for start in idxs:
-    #     start_index = start  # The first data point of the batch
-    #     end_index = (
-    #         start_index + batch_size
-    #     )  # The first data point of the following batch
-    #     yield y[start_index:end_index], tx[start_index:end_index]
-
 
 def compute_stoch_gradient(y, tx, w):
     """Compute a stochastic gradient at w from a data sample batch of size B, where B < N, and their corresponding labels.
@@ -154,13 +135,13 @@ def compute_stoch_gradient(y, tx, w):
     """
 
     # ***************************************************
-    predictions = tx.dot(w) #X tilde * w
+    predictions = tx.dot(w)  # X tilde * w
     e = y - predictions
-    
-    stoch_gradient = -(1/y.size)*np.dot(tx.T,e)
+
+    stoch_gradient = -(1 / y.size) * np.dot(tx.T, e)
     # TODO: implement stochastic gradient computation. It's the same as the usual gradient.
     # ***************************************************
-    #raise NotImplementedError
+    # raise NotImplementedError
     return stoch_gradient
 
 
@@ -179,20 +160,6 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
         w: Final weights
         loss: Final loss value
     """
-    # ws, losses, w = [initial_w], [], initial_w
-
-    # for n_iter in range(max_iters):
-    #     for minibatch_y, minibatch_tx in batch_iter(y, tx):
-    #         w -= gamma * compute_stoch_gradient(minibatch_y, minibatch_tx, w)
-    #         losses.append(compute_loss(minibatch_y, minibatch_tx, w))
-    #         ws.append(w.copy())
-
-    #     print(
-    #         "SGD iter. {bi}/{ti}: loss={l}, w={w}".format(
-    #             bi=n_iter, ti=max_iters - 1, l=losses[-1], w=w
-    #         )
-    #     )
-    # return ws, losses
 
     w = initial_w
 
@@ -219,10 +186,12 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         losses: list of length max_iters, containing the loss values for each iteration of SGD.
     """
 
-    w, loss = stochastic_gradient_descent(y, tx, initial_w, 1 ,max_iters, gamma)
+    w, loss = stochastic_gradient_descent(y, tx, initial_w, 1, max_iters, gamma)
     return w, loss
 
-### IMPLEMENTATION 3 
+
+### IMPLEMENTATION 3
+
 
 def least_squares(y, tx):
     """Calculate the least squares solution.
@@ -245,8 +214,8 @@ def least_squares(y, tx):
     return w, mse
 
 
-
 ### IMPLEMENTATION 4
+
 
 def ridge_regression(y, tx, lambda_):
     """Implement ridge regression.
@@ -265,14 +234,18 @@ def ridge_regression(y, tx, lambda_):
     array([0.03947092, 0.00319628])
     """
     # Compute the optimal weights using the normal equation for ridge regression
-    w = np.linalg.solve(tx.T @ tx + lambda_ * np.eye(tx.shape[1]), tx.T @ y)
+    N = len(y)
+
+    lambda_prime = 2 * N * lambda_
+
+    w = np.linalg.solve(tx.T @ tx + lambda_prime * np.identity(tx.shape[1]), tx.T @ y)
     loss = compute_loss(y, tx, w)
-    
+
     return w, loss
 
 
-
 ### IMPLEMENTATION 5
+
 
 def sigmoid(t):
     """apply sigmoid function on t.
@@ -289,9 +262,10 @@ def sigmoid(t):
     array([0.52497919, 0.52497919])
     """
     # raise NotImplementedError
-    sigmoid_function = 1/(1+np.exp(-t))
+    sigmoid_function = 1 / (1 + np.exp(-t))
 
     return sigmoid_function
+
 
 def calculate_loss_sigmoid(y, tx, w):
     """compute the cost by negative log likelihood.
@@ -317,10 +291,14 @@ def calculate_loss_sigmoid(y, tx, w):
     # INSERT YOUR CODE HERE
     # TODO
 
-    loss = -np.mean(y * np.log(sigmoid(np.dot(tx, w))) + (1 - y) * np.log(1 - sigmoid(np.dot(tx, w))))
+    loss = -np.mean(
+        y * np.log(sigmoid(np.dot(tx, w)))
+        + (1 - y) * np.log(1 - sigmoid(np.dot(tx, w)))
+    )
     # ***************************************************
     # raise NotImplementedError
     return loss
+
 
 def calculate_gradient_sigmoid(y, tx, w):
     """compute the gradient of loss.
@@ -345,45 +323,12 @@ def calculate_gradient_sigmoid(y, tx, w):
     # ***************************************************
     # INSERT YOUR CODE HERE
     # TODO
-    
+
     gradient = np.dot(tx.T, sigmoid(np.dot(tx, w)) - y) / y.shape[0]
     # ***************************************************
     # raise NotImplementedError("Calculate gradient")
     return gradient
 
-def calculate_hessian(y, tx, w):
-    """return the Hessian of the loss function.
-
-    Args:
-        y:  shape=(N, 1)
-        tx: shape=(N, D)
-        w:  shape=(D, 1)
-
-    Returns:
-        a hessian matrix of shape=(D, D)
-
-    >>> y = np.c_[[0., 1.]]
-    >>> tx = np.arange(6).reshape(2, 3)
-    >>> w = np.array([[0.1], [0.2], [0.3]])
-    >>> calculate_hessian(y, tx, w)
-    array([[0.28961235, 0.3861498 , 0.48268724],
-           [0.3861498 , 0.62182124, 0.85749269],
-           [0.48268724, 0.85749269, 1.23229813]])
-    """
-    # ***************************************************
-    N = tx.shape[0]  # Number of samples
-    Xw = tx.dot(w)   # Compute Xw (dot product of tx and w)
-    
-    # Compute the sigmoid values
-    sigma_Xw = sigmoid(Xw)
-    
-    # Create the diagonal matrix S with shape (N, N)
-    S = np.diagflat(sigma_Xw * (1 - sigma_Xw))
-    
-    # Compute the Hessian matrix: (1/N) * tx.T @ S @ tx
-    H = (1 / N) * tx.T @ S @ tx
-    
-    return H
 
 def learning_by_gradient_descent(y, tx, w, gamma):
     """
@@ -448,16 +393,12 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         # log info
         if iter % 100 == 0:
             print("Current iteration={i}, loss={l}".format(i=iter, l=loss))
-        
-    hessian = calculate_hessian(y, tx, w)
-    gradient = calculate_gradient_sigmoid(y, tx, w)
 
-    return loss, gradient, hessian
-    
-
+    return w, loss
 
 
 ### IMPLEMENTATION 6
+
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Perform regularized logistic regression using gradient descent.
@@ -483,7 +424,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         p = sigmoid(tx.dot(w))  # Shape (N,)
 
         # Compute the loss without the regularization term
-        loss = -np.mean(y * np.log(p + 1e-15) + (1 - y) * np.log(1 - p + 1e-15)) 
+        loss = -np.mean(y * np.log(p + 1e-15) + (1 - y) * np.log(1 - p + 1e-15))
         # Add regularization term to the loss
         reg_term = lambda_ * np.sum(w**2)
         loss += reg_term
