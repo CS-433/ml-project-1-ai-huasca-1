@@ -405,20 +405,14 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """
     w = initial_w  # Initialize weights
 
-    best_loss = np.inf
-
     for n_iter in range(max_iters):
         # Compute predicted probabilities (sigmoid)
         p = sigmoid(tx.dot(w))  # Shape (N,)
 
         # Compute the loss without the regularization term
-        loss = -np.mean(y * np.log(p + 1e-15) + (1 - y) * np.log(1 - p + 1e-15))
         # Add regularization term to the loss
-        reg_term = lambda_ * np.sum(w**2)
-        loss += reg_term
-
-        best_loss = loss
-
+        # reg_term = lambda_ * np.sum(w**2)
+        # loss += reg_term
         # Compute the gradient of the loss
         gradient = tx.T.dot(p - y) / y.shape[0]  # Shape (D,)
         # Add regularization to the gradient
@@ -426,6 +420,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
         # Update the weights
         w -= gamma * gradient
+    loss = calculate_loss_sigmoid(y, tx, w)
+
 
     # Return the final weights and loss (without regularization term)
-    return w, best_loss
+    return w, loss
