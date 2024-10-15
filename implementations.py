@@ -58,27 +58,23 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
         ws: a list of length max_iters containing the model parameters as numpy arrays of shape (D,), for each iteration of GD
     """
-    # ws, losses, w = [initial_w], [], initial_w
-    # for n_iter in range(max_iters):
-    #     loss = compute_loss(y, tx, w)
-    #     w -= gamma * compute_gradient(y, tx, w)
 
-    #     ws.append(w)
-    #     losses.append(loss)
-    #     print(
-    #         "GD iter. {bi}/{ti}: loss={l}, w={w}".format(
-    #             bi=n_iter, ti=max_iters - 1, l=loss, w=w
-    #         )
-    #     )
-    # return ws, losses
+    ws = [initial_w]
+    losses = []
     w = initial_w
+    for n_iter in range(max_iters):
+        gradient = compute_gradient(y, tx, w)
+        loss = compute_loss(y, tx, w)
+        w = w - gamma * gradient
+        ws.append(w)
+        losses.append(loss)
+        print(
+            "GD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]
+            )
+        )
 
-    for n_iter in range(max_iters): #while?
-        w -= gamma * compute_gradient(y, tx, w)
-
-    loss = compute_loss(y, tx, w)
-
-    return w, loss
+    return losses, ws
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
@@ -96,10 +92,10 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         loss: The final loss (MSE) value.
     """
 
-    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma)
+    losses,ws = gradient_descent(y, tx, initial_w, max_iters, gamma)
+    loss = losses[-1]
+    w = ws[-1]
     return w, loss
-
-
 
 ### IMPLEMENTATION 2
 
@@ -149,15 +145,22 @@ def compute_stoch_gradient(y, tx, w):
     """Compute a stochastic gradient at w from a data sample batch of size B, where B < N, and their corresponding labels.
 
     Args:
-        y: numpy array of shape=(B,)
-        tx: numpy array of shape=(B,D)
-        w: numpy array of shape=(D,). The vector of model parameters.
+        y: numpy array of shape=(B, )
+        tx: numpy array of shape=(B,2)
+        w: numpy array of shape=(2, ). The vector of model parameters.
 
     Returns:
-        A numpy array of shape (D,) (same shape as w), containing the stochastic gradient of the loss at w.
-    """    
+        A numpy array of shape (2, ) (same shape as w), containing the stochastic gradient of the loss at w.
+    """
 
-    stoch_gradient = compute_gradient(y, tx, w)
+    # ***************************************************
+    predictions = tx.dot(w) #X tilde * w
+    e = y - predictions
+    
+    stoch_gradient = -(1/y.size)*np.dot(tx.T,e)
+    # TODO: implement stochastic gradient computation. It's the same as the usual gradient.
+    # ***************************************************
+    #raise NotImplementedError
     return stoch_gradient
 
 
@@ -219,8 +222,6 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     w, loss = stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma)
     return w, loss
 
-
-
 ### IMPLEMENTATION 3 
 
 def least_squares(y, tx):
@@ -240,8 +241,8 @@ def least_squares(y, tx):
     """
     # Compute the optimal weights using the normal equation: w = (X^T X)^{-1} X^T y
     w = np.linalg.solve(tx.T @ tx, tx.T @ y)  # Using solve for stability
-    loss = compute_loss(y, tx, w)
-    return w, loss
+    mse = compute_loss(y, tx, w)
+    return w, mse
 
 
 
