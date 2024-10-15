@@ -75,8 +75,9 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
                 bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]
             )
         )
+    loss = compute_loss(y, tx, w)
 
-    return losses, ws
+    return w, loss
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
@@ -94,11 +95,9 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         loss: The final loss (MSE) value.
     """
 
-    losses, ws = gradient_descent(y, tx, initial_w, max_iters, gamma)
-    loss = losses[-1]
-    w = ws[-1]
+    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma)
+    
     return w, loss
-
 
 ### IMPLEMENTATION 2
 
