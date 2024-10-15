@@ -3,11 +3,6 @@ from helpers import load_csv_data
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Loading the data
-# data_path = os.path.join(os.getcwd(), 'dataset')
-# print(data_path)
-# x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
-
 
 ### IMPLEMENTATION 1
 
@@ -23,7 +18,12 @@ def compute_loss(y, tx, w):
     Returns:
         float: The value of the MSE loss.
     """
-    mse = np.mean((y - tx.dot(w)) ** 2) / 2
+    # Compute the error vector (difference between actual and predicted values)
+    error = y - tx.dot(w)
+
+    # Compute the mean squared error (MSE) loss
+    mse = np.mean(error**2) / 2
+
     return mse
 
 
@@ -38,7 +38,12 @@ def compute_gradient(y, tx, w):
     Returns:
         numpy.ndarray: Gradient of the loss with respect to w, of shape (D,).
     """
-    gradient = -tx.T.dot(y - tx.dot(w)) / y.size
+    # Compute the error vector (difference between actual and predicted values)
+    error = y - tx.dot(w)
+
+    # Compute the gradient of the loss function
+    gradient = -tx.T.dot(error) / y.size
+
     return gradient
 
 
@@ -56,19 +61,27 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
         numpy.ndarray: Final weight vector of shape (D,).
         float: Final loss (MSE) value.
     """
+    # Initialize lists to store weights and losses at each iteration
     ws = [initial_w]
     initial_loss = compute_loss(y, tx, initial_w)
     losses = [initial_loss]
     w = initial_w
 
+    # Iterate over the number of iterations
     for n_iter in range(max_iters):
+        # Compute the gradient of the loss function
         gradient = compute_gradient(y, tx, w)
+        # Update the weights using the gradient and learning rate
         w -= gamma * gradient
+        # Compute the loss with the updated weights
         loss = compute_loss(y, tx, w)
+        # Store the updated weights and loss
         ws.append(w)
         losses.append(loss)
+        # Print the current iteration, loss, and weights
         print(f"GD iter. {n_iter}/{max_iters - 1}: loss={loss}, w0={w[0]}, w1={w[1]}")
 
+    # Compute the final loss
     loss = compute_loss(y, tx, w)
     return w, loss
 
@@ -87,7 +100,10 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         numpy.ndarray: Final weight vector of shape (D,).
         float: Final loss (MSE) value.
     """
+    # Perform gradient descent to optimize the weights
     w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma)
+
+    # Return the final weights and the final loss
     return w, loss
 
 
@@ -112,11 +128,13 @@ def batch_iter(y, tx, batch_size, shuffle=True):
     if shuffle:
         idxs = np.random.permutation(data_size)  # Shuffle indices
     else:
-        idxs = np.arange(data_size)
+        idxs = np.arange(data_size)  # Create ordered indices
 
     for start in range(0, data_size, batch_size):
-        end = min(start + batch_size, data_size)
-        yield y[idxs[start:end]], tx[idxs[start:end]]
+        end = min(
+            start + batch_size, data_size
+        )  # Determine the end index of the current batch
+        yield y[idxs[start:end]], tx[idxs[start:end]]  # Yield the mini-batch
 
 
 def compute_stoch_gradient(y, tx, w):
@@ -130,10 +148,15 @@ def compute_stoch_gradient(y, tx, w):
     Returns:
         numpy array of shape (D,), the stochastic gradient of the loss at w.
     """
-    predictions = tx.dot(w)  # Compute predictions
-    e = y - predictions  # Compute error
+    # Compute predictions for the mini-batch
+    predictions = tx.dot(w)
 
-    stoch_gradient = -(1 / y.size) * np.dot(tx.T, e)  # Compute stochastic gradient
+    # Compute the error vector (difference between actual and predicted values)
+    e = y - predictions
+
+    # Compute the stochastic gradient of the loss function
+    stoch_gradient = -(1 / y.size) * np.dot(tx.T, e)
+
     return stoch_gradient
 
 
@@ -152,14 +175,22 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
         numpy.ndarray: Final weights of shape (D,).
         float: Final loss value.
     """
+    # Initialize the weights with the initial guess
     w = initial_w
 
+    # Iterate over the number of iterations
     for n_iter in range(max_iters):
+        # Generate mini-batches and perform updates
         for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size):
-            w -= gamma * compute_stoch_gradient(minibatch_y, minibatch_tx, w)
+            # Compute the stochastic gradient for the current mini-batch
+            gradient = compute_stoch_gradient(minibatch_y, minibatch_tx, w)
+            # Update the weights using the gradient and learning rate
+            w -= gamma * gradient
 
+    # Compute the final loss using the updated weights
     loss = compute_loss(y, tx, w)
 
+    # Return the final weights and loss
     return w, loss
 
 
@@ -178,7 +209,10 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         loss: scalar, the final loss (MSE) value.
     """
 
+    # Perform stochastic gradient descent with a batch size of 1 (SGD)
     w, loss = stochastic_gradient_descent(y, tx, initial_w, 1, max_iters, gamma)
+
+    # Return the final weights and loss
     return w, loss
 
 
@@ -201,7 +235,11 @@ def least_squares(y, tx):
     """
     # Compute the optimal weights using the normal equation: w = (X^T X)^{-1} X^T y
     w = np.linalg.solve(tx.T @ tx, tx.T @ y)  # Using solve for stability
+
+    # Compute the mean squared error (MSE) loss using the computed weights
     mse = compute_loss(y, tx, w)
+
+    # Return the optimal weights and the MSE loss
     return w, mse
 
 
@@ -225,10 +263,16 @@ def ridge_regression(y, tx, lambda_):
     >>> ridge_regression(np.array([0.1, 0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 1)
     (array([0.03947092, 0.00319628]), 0.01600625)
     """
-    # Compute the optimal weights using the normal equation for ridge regression
+    # Number of data points
     N = len(y)
+
+    # Adjust lambda for ridge regression
     lambda_prime = 2 * N * lambda_
+
+    # Compute the optimal weights using the normal equation for ridge regression
     w = np.linalg.solve(tx.T @ tx + lambda_prime * np.identity(tx.shape[1]), tx.T @ y)
+
+    # Compute the mean squared error (MSE) loss using the computed weights
     loss = compute_loss(y, tx, w)
 
     return w, loss
@@ -274,12 +318,15 @@ def calculate_loss_sigmoid(y, tx, w):
     >>> round(calculate_loss_sigmoid(y, tx, w), 8)
     1.52429481
     """
+    # Ensure the number of samples matches between y and tx
     assert y.shape[0] == tx.shape[0]
+    # Ensure the number of features matches between tx and w
     assert tx.shape[1] == w.shape[0]
 
+    # Compute the negative log likelihood loss
     loss = -np.mean(
-        y * np.log(sigmoid(np.dot(tx, w)))
-        + (1 - y) * np.log(1 - sigmoid(np.dot(tx, w)))
+        y * np.log(sigmoid(np.dot(tx, w)))  # Contribution of positive class
+        + (1 - y) * np.log(1 - sigmoid(np.dot(tx, w)))  # Contribution of negative class
     )
     return loss
 
@@ -302,7 +349,15 @@ def calculate_gradient_sigmoid(y, tx, w):
     >>> calculate_gradient_sigmoid(y, tx, w)
     array([-0.10370763,  0.2067104 ,  0.51712843])
     """
-    gradient = np.dot(tx.T, sigmoid(np.dot(tx, w)) - y) / y.shape[0]
+    # Compute the dot product of tx and w, then apply the sigmoid function
+    sigmoid_tx_w = sigmoid(np.dot(tx, w))
+
+    # Compute the difference between the sigmoid predictions and the actual target values
+    error = sigmoid_tx_w - y
+
+    # Compute the gradient of the loss function
+    gradient = np.dot(tx.T, error) / y.shape[0]
+
     return gradient
 
 
@@ -330,8 +385,13 @@ def learning_by_gradient_descent(y, tx, w, gamma):
     >>> w
     array([0.11037076, 0.17932896, 0.24828716])
     """
+    # Compute the gradient of the loss function
     gradient = calculate_gradient_sigmoid(y, tx, w)
+
+    # Update the weights using the gradient and learning rate
     w = w - gamma * gradient
+
+    # Compute the loss with the updated weights
     loss = calculate_loss_sigmoid(y, tx, w)
 
     return w, loss
@@ -352,8 +412,10 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         loss: scalar, the final loss value.
     """
 
+    # Initialize weights with the initial guess
     w = initial_w
 
+    # Iterate over the number of iterations
     for iter in range(max_iters):
         # Perform one step of gradient descent
         w, loss_iter = learning_by_gradient_descent(y, tx, w, gamma)
