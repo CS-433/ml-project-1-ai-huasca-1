@@ -65,7 +65,7 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
     for n_iter in range(max_iters):
         gradient = compute_gradient(y, tx, w)
         loss = compute_loss(y, tx, w)
-        w = w - gamma * gradient
+        w -= gamma * gradient
         ws.append(w)
         losses.append(loss)
         print(
@@ -284,10 +284,6 @@ def calculate_loss_sigmoid(y, tx, w):
     assert y.shape[0] == tx.shape[0]
     assert tx.shape[1] == w.shape[0]
 
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    # TODO
-
     loss = -np.mean(
         y * np.log(sigmoid(np.dot(tx, w)))
         + (1 - y) * np.log(1 - sigmoid(np.dot(tx, w)))
@@ -317,9 +313,6 @@ def calculate_gradient_sigmoid(y, tx, w):
            [ 0.2067104 ],
            [ 0.51712843]])
     """
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    # TODO
 
     gradient = np.dot(tx.T, sigmoid(np.dot(tx, w)) - y) / y.shape[0]
     # ***************************************************
@@ -359,9 +352,7 @@ def learning_by_gradient_descent(y, tx, w, gamma):
     loss = calculate_loss_sigmoid(y, tx, w)
     gradient = calculate_gradient_sigmoid(y, tx, w)
     w = w - gamma * gradient
-    # TODO
-    # ***************************************************
-    # raise NotImplementedError
+
     return loss, w
 
 
@@ -438,4 +429,3 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
     # Return the final weights and loss (without regularization term)
     return w, best_loss
-
