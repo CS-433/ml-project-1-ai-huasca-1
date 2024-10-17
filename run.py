@@ -3,6 +3,7 @@ from helpers import load_csv_data
 import numpy as np
 import matplotlib.pyplot as plt
 import implementations as imp
+from helpers_perso import *
 
 # Loading the data
 data_path = os.path.join(os.getcwd(), "dataset")
@@ -11,40 +12,24 @@ print("Data loaded successfully!")
 
 remove_nan = True
 
-def remove_nan_features(array):
-    """
-    Removes columns containing NaN values from a given array.
+if remove_nan:
+    # Clean all arrays by removing columns containing NaN values
+    x_train_cleaned = remove_nan_features(x_train)
+    x_test_cleaned = remove_nan_features(x_test)
+    print("Data cleaned successfully!")
 
-    Args:
-        array (numpy.ndarray): The input array to clean.
+    # Print the shapes of the cleaned arrays to verify the column removal
+    print(f"Original shape of x_train: {x_train.shape}")
+    print(f"Cleaned shape of x_train: {x_train_cleaned.shape}")
 
-    Returns:
-        numpy.ndarray: The cleaned array with NaN-containing columns removed.
-    """
-    # Identify columns that contain NaN
-    nan_cols = np.any(np.isnan(array), axis=0)
+    print(f"Original shape of x_test: {x_test.shape}")
+    print(f"Cleaned shape of x_test: {x_test_cleaned.shape}")
 
-    # Remove columns containing NaN
-    cleaned_array = array[:, ~nan_cols]
-
-    return cleaned_array
-
-
-# Clean all arrays by removing columns containing NaN values
-x_train_cleaned = remove_nan_features(x_train)
-x_test_cleaned = remove_nan_features(x_test)
-print("Data cleaned successfully!")
-
-# Print the shapes of the cleaned arrays to verify the column removal
-print(f"Original shape of x_train: {x_train.shape}")
-print(f"Cleaned shape of x_train: {x_train_cleaned.shape}")
-
-print(f"Original shape of x_test: {x_test.shape}")
-print(f"Cleaned shape of x_test: {x_test_cleaned.shape}")
-
+    x_train = x_train_cleaned
+    x_test = x_test_cleaned
 
 # Initial weights (can be zeros, random, or some heuristic value)
-initial_w = np.zeros(x_train_cleaned.shape[1])
+initial_w = np.zeros(x_train.shape[1])
 
 # Parameters for gradient descent
 max_iters = 1000

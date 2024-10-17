@@ -2,23 +2,110 @@ import numpy as np
 
 # PREPROCESSING
 
-def remove_nan_features(array):
+
+def remove_nan_features(array, min_proportion=0.8):
     """
-    Removes columns containing NaN values from a given array.
+    Removes columns containing NaN values from a given array if the proportion of NaNs is greater than min_proportion.
+    Prints the percentage of columns deleted.
 
     Args:
         array (numpy.ndarray): The input array to clean.
+        min_proportion (float): The minimum proportion of NaNs required to remove a column.
 
     Returns:
         numpy.ndarray: The cleaned array with NaN-containing columns removed.
     """
-    # Identify columns that contain NaN
-    nan_cols = np.any(np.isnan(array), axis=0)
+    # Calculate the proportion of NaNs in each column
+    nan_proportions = np.isnan(array).sum(axis=0) / array.shape[0]
 
-    # Remove columns containing NaN
-    cleaned_array = array[:, ~nan_cols]
+    # Identify columns that contain NaN proportions greater than min_proportion
+    cols_to_remove = nan_proportions > min_proportion
+
+    # Calculate the percentage of columns to be removed
+    percentage_deleted = np.sum(cols_to_remove) / array.shape[1] * 100
+    print(f"Percentage of columns to delete (NaN proportion superior to {min_proportion*100} %): {percentage_deleted:.2f}%")
+
+    # Remove columns containing NaN proportions greater than min_proportion
+    cleaned_array = array[:, ~cols_to_remove]
+    print("Data cleaned successfully!")
+    print(f"Original shape of x_train: {array.shape}")
+    print(f"Cleaned shape of x_train: {cleaned_array.shape}")
 
     return cleaned_array
+
+def encode_nan_as_zero_integer_columns(arr, max_proportion):
+    """
+    Encode NaN values as zeroes in columns that contain only integers and do not contain zeroes.
+    Delete the columns containing a proportion of Nan values greater than `max_proportion`, 
+    or with a number of unique values outside the range [`min_unique`, `max_unique`].
+    
+    Args:
+        arr (np.ndarray): A 2D NumPy array.
+        min_unique (int): Minimum number of unique values a column must have to encode NaNs as zeroes.
+        max_unique (int): Maximum number of unique values a column must have to encode NaNs as zeroes.
+        
+    Returns:
+        np.ndarray: A 2D NumPy array with NaN values replaced by zeroes where applicable.
+    """
+    # Iterate over each column
+    for col_index in range(arr.shape[1]):
+        column = arr[:, col_index]
+        
+        # Check if the column contains only integers (ignoring NaN values)
+        is_integer_column = np.all(np.isnan(column) | np.equal(np.mod(column, 1), 0))
+        
+        # Check if the column contains any zero
+        contains_zero = np.any(column == 0)
+        
+        # If the column meets the criteria, replace NaNs with 0
+        if is_integer_column and not contains_zero:
+
+            nan_proportion = np.isnan(column).sum() / len(column)
+            
+            if nan_proportion > max_proportion:
+                arr = np.delete(arr, col_index, axis=1)
+            else:    
+                # Replace NaN values with 0
+                arr[:, col_index] = np.where(np.isnan(column), 0, column)
+    
+    return arr
+
+def one_hot_encode_column(arr, column_index):
+    """
+    Perform one-hot encoding on a specific column of a 2D NumPy array, treating NaN as a separate category using only NumPy.
+    
+    Args:
+        arr (np.ndarray): A 2D NumPy array.
+        column_index (int): The index of the column to one-hot encode.
+        
+    Returns:
+        np.ndarray: A 2D NumPy array with the one-hot encoded column and the rest of the data.
+    """
+    # Extract the column to be one-hot encoded
+    column_to_encode = arr[:, column_index]
+    
+    # Handle NaN values by treating them as a separate category
+    # Convert NaNs to a string or placeholder value ('NaN') that can be indexed
+    column_to_encode = np.where(np.isnan(column_to_encode), 'NaN', column_to_encode)
+    
+    # Get the unique values (including 'NaN') and their corresponding indices
+    unique_values = np.unique(column_to_encode)
+    
+    # Create a mapping from each unique value to an index
+    value_to_index = {value: idx for idx, value in enumerate(unique_values)}
+    
+    # Initialize a zero matrix with shape (len(arr), number of unique values)
+    one_hot_encoded = np.zeros((arr.shape[0], unique_values.shape[0]), dtype=int)
+    
+    # Populate the one-hot matrix
+    for i, value in enumerate(column_to_encode):
+        one_hot_encoded[i, value_to_index[value]] = 1
+    
+    # Remove the original column and concatenate the one-hot encoded columns
+    arr_without_column = np.delete(arr, column_index, axis=1)
+    one_hot_encoded_arr = np.concatenate([arr_without_column, one_hot_encoded], axis=1)
+    
+    return one_hot_encoded_arr
 
 # LINEAR REGRESSION WITH GRADIENT DESCENT
 
