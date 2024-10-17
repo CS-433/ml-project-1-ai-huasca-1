@@ -9,6 +9,7 @@ data_path = os.path.join(os.getcwd(), "dataset")
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 print("Data loaded successfully!")
 
+remove_nan = True
 
 def remove_nan_features(array):
     """
