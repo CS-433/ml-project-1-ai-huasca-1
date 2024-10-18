@@ -1,9 +1,6 @@
-import os
-from helpers import load_csv_data
 from helpers_perso import *
 import numpy as np
-import matplotlib.pyplot as plt
-
+from helpers_perso.helpers_implementations import *
 
 ### IMPLEMENTATION 1
 
