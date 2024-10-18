@@ -8,4 +8,4 @@ data/dataset.zip
 dataset/*.csv
 
 # MacOS
-.DS_Store/
+.DS_Store
