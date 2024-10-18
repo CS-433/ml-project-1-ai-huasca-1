@@ -2,6 +2,7 @@ import numpy as np
 
 # LINEAR REGRESSION WITH GRADIENT DESCENT
 
+
 def compute_loss(y, tx, w):
     """Calculate the mean squared error (MSE) loss.
 
@@ -21,6 +22,7 @@ def compute_loss(y, tx, w):
 
     return mse
 
+
 def compute_gradient(y, tx, w):
     """Compute the gradient of the loss.
 
@@ -39,6 +41,7 @@ def compute_gradient(y, tx, w):
     gradient = -tx.T.dot(error) / y.size
 
     return gradient
+
 
 def gradient_descent(y, tx, initial_w, max_iters, gamma):
     """Perform gradient descent optimization.
@@ -78,7 +81,9 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma):
     loss = compute_loss(y, tx, w)
     return w, loss
 
+
 # LINEAR REGRESSION WITH STOCHASTIC GRADIENT DESCENT
+
 
 def batch_iter(y, tx, batch_size, shuffle=True):
     """
@@ -163,7 +168,9 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
     # Return the final weights and loss
     return w, loss
 
+
 # LOGISTIC REGRESSION
+
 
 def sigmoid(t):
     """apply sigmoid function on t.
@@ -279,5 +286,3 @@ def learning_by_gradient_descent(y, tx, w, gamma):
     loss = calculate_loss_sigmoid(y, tx, w)
 
     return w, loss
-
-

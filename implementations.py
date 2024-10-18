@@ -4,6 +4,7 @@ from helpers_perso.helpers_implementations import *
 
 ### IMPLEMENTATION 1
 
+
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using gradient descent (GD) with MSE as the loss function.
 
@@ -26,6 +27,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
 
 
 ### IMPLEMENTATION 2
+
 
 def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using stochastic gradient descent (SGD) with MSE as the loss function.
@@ -112,6 +114,7 @@ def ridge_regression(y, tx, lambda_):
 
 
 ### IMPLEMENTATION 5
+
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Perform logistic regression using gradient descent.
