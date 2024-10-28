@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import implementations as imp
 from helpers_perso import *
+from crossvalidation import *
 
 # Loading the data
 data_path = os.path.join(os.getcwd(), "dataset")
