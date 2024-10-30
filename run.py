@@ -1,8 +1,8 @@
 import os
-from helpers import load_csv_data
+from helpers import *
 import numpy as np
 import matplotlib.pyplot as plt
-import implementations as imp
+from implementations import *
 from helpers_perso import *
 from crossvalidation import *
 
@@ -23,7 +23,7 @@ print("Data loaded successfully!")
 # print("Implementation 1: mean_squared_error_gd \n")
 
 # # Running gradient descent with MSE
-# w_final_gd, loss_final_gd = imp.mean_squared_error_gd(
+# w_final_gd, loss_final_gd = mean_squared_error_gd(
 #     y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
 # )
 
@@ -37,7 +37,7 @@ print("Data loaded successfully!")
 # batch_size = 1  # Size of mini-batch for stochastic updates
 
 # # Running stochastic gradient descent with MSE
-# w_final_sgd, loss_final_sgd = imp.mean_squared_error_sgd(
+# w_final_sgd, loss_final_sgd = mean_squared_error_sgd(
 #     y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
 # )
 
@@ -49,7 +49,7 @@ print("Data loaded successfully!")
 # print("Implementation 3: least_squares \n")
 
 # # Calculate the least squares solution
-# w_optimal, mse = imp.least_squares(y_train.copy(), x_train_cleaned.copy())
+# w_optimal, mse = least_squares(y_train.copy(), x_train_cleaned.copy())
 
 # print(f"Optimal weights: {w_optimal}")
 # print(f"Mean Squared Error: {mse}")
@@ -59,7 +59,7 @@ print("Data loaded successfully!")
 # print("Implementation 4: ridge_regression \n")
 
 # # Perform ridge regression
-# w_final_rr, loss_final_rr = imp.ridge_regression(
+# w_final_rr, loss_final_rr = ridge_regression(
 #     y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
 # )
 
@@ -71,7 +71,7 @@ print("Data loaded successfully!")
 # print("Implementation 5: logistic_regression \n")
 
 # # Perform logistic regression
-# w_final_lr, loss_final_lr = imp.logistic_regression(
+# w_final_lr, loss_final_lr = logistic_regression(
 #     y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
 # )
 
@@ -87,7 +87,7 @@ print("Data loaded successfully!")
 # gamma = 0.01  # Learning rate
 
 # # Perform regularized logistic regression
-# w_final_rlr, loss_final_rlr = imp.reg_logistic_regression(
+# w_final_rlr, loss_final_rlr = reg_logistic_regression(
 #     y_train.copy(), x_train_cleaned.copy(), lambda_, initial_w.copy(), max_iters, gamma
 # )
 
@@ -97,8 +97,6 @@ print("Data loaded successfully!")
 # import os
 # os.chdir("..")
 
-from helpers import *
-from helpers_perso import *
 from preprocessing import nan_imputation
 from preprocessing import one_hot_encoding
 from preprocessing import standardization
@@ -159,4 +157,7 @@ standardized_x_train = standardization.standardize_columns(
     encoded_x_train, indexes_non_categorical_features
 )
 
-###### a partir de la peut etre pas opti mais standardized_x_train est standardisé et sans Nan....
+#create_csv_submission(ids, y_pred, name)
+create_csv_submission(indexes_non_categorical_features, y_pred, 'submission')
+
+###### a partir de la peut etre pas opti mais standardized_x_train est standardisé et sans NaN....
