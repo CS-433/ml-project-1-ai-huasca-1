@@ -1,113 +1,163 @@
 import os
-from helpers import load_csv_data
+from helpers import *
 import numpy as np
 import matplotlib.pyplot as plt
-import implementations as imp
+from implementations import *
 from helpers_perso import *
 from crossvalidation import *
 
 # Loading the data
-data_path = os.path.join(os.getcwd(), "dataset")
+data_path = os.path.join(os.getcwd(), "data", "dataset")
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 print("Data loaded successfully!")
 
-remove_nan = True
+# # Initial weights (can be zeros, random, or some heuristic value)
+# initial_w = np.zeros(x_train.shape[1])
 
-if remove_nan:
-    # Clean all arrays by removing columns containing NaN values
-    x_train_cleaned = remove_nan_features(x_train)
-    x_test_cleaned = remove_nan_features(x_test)
-    print("Data cleaned successfully!")
-
-    # Print the shapes of the cleaned arrays to verify the column removal
-    print(f"Original shape of x_train: {x_train.shape}")
-    print(f"Cleaned shape of x_train: {x_train_cleaned.shape}")
-
-    print(f"Original shape of x_test: {x_test.shape}")
-    print(f"Cleaned shape of x_test: {x_test_cleaned.shape}")
-
-    x_train = x_train_cleaned
-    x_test = x_test_cleaned
-
-# Initial weights (can be zeros, random, or some heuristic value)
-initial_w = np.zeros(x_train.shape[1])
-
-# Parameters for gradient descent
-max_iters = 1000
-gamma = 0.1  # Learning rate
+# # Parameters for gradient descent
+# max_iters = 1000
+# gamma = 0.1  # Learning rate
 
 
-### Testing imprementation 1
-print("Implementation 1: mean_squared_error_gd \n")
+# ### Testing imprementation 1
+# print("Implementation 1: mean_squared_error_gd \n")
 
-# Running gradient descent with MSE
-w_final_gd, loss_final_gd = imp.mean_squared_error_gd(
-    y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
+# # Running gradient descent with MSE
+# w_final_gd, loss_final_gd = mean_squared_error_gd(
+#     y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
+# )
+
+# print(f"Final weights: {w_final_gd}")
+# print(f"Final loss: {loss_final_gd}")
+
+
+# ### Testing imprementation 2
+# print("Implementation 2: mean_squared_error_sgd \n")
+
+# batch_size = 1  # Size of mini-batch for stochastic updates
+
+# # Running stochastic gradient descent with MSE
+# w_final_sgd, loss_final_sgd = mean_squared_error_sgd(
+#     y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
+# )
+
+# print(f"Final weights: {w_final_sgd}")
+# print(f"Final loss: {loss_final_sgd}")
+
+
+# ### Testing implementation 3
+# print("Implementation 3: least_squares \n")
+
+# # Calculate the least squares solution
+# w_optimal, mse = least_squares(y_train.copy(), x_train_cleaned.copy())
+
+# print(f"Optimal weights: {w_optimal}")
+# print(f"Mean Squared Error: {mse}")
+
+
+# ### Testing implementation 4
+# print("Implementation 4: ridge_regression \n")
+
+# # Perform ridge regression
+# w_final_rr, loss_final_rr = ridge_regression(
+#     y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
+# )
+
+# print(f"Final weights: {w_final_rr}")
+# print(f"Final loss: {loss_final_rr}")
+
+
+# ### Testing implementation 5
+# print("Implementation 5: logistic_regression \n")
+
+# # Perform logistic regression
+# w_final_lr, loss_final_lr = logistic_regression(
+#     y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
+# )
+
+# print(f"Final weights: {w_final_lr}")
+# print(f"Final loss: {loss_final_lr}")
+
+
+# ### Testing implementation 6
+# print("Implementation 6: reg_logistic_regression \n")
+
+# # Example usage
+# lambda_ = 0.1  # Regularization parameter
+# gamma = 0.01  # Learning rate
+
+# # Perform regularized logistic regression
+# w_final_rlr, loss_final_rlr = reg_logistic_regression(
+#     y_train.copy(), x_train_cleaned.copy(), lambda_, initial_w.copy(), max_iters, gamma
+# )
+
+# print(f"Final weights: {w_final_rlr}")
+# print(f"Final loss: {loss_final_rlr}")
+
+# import os
+# os.chdir("..")
+
+from preprocessing import nan_imputation
+from preprocessing import one_hot_encoding
+from preprocessing import standardization
+
+# Clean all arrays by removing columns containing NaN values
+x_train_cleaned = nan_imputation.remove_nan_features(x_train, 0.8)
+print(
+    f"Removed {x_train.shape[1] - x_train_cleaned.shape[1]} columns with more than 80% NaN values."
 )
 
-print(f"Final weights: {w_final_gd}")
-print(f"Final loss: {loss_final_gd}")
+# Identify columns that only contain integers
+integer_columns = [
+    i
+    for i in range(x_train_cleaned.shape[1])
+    if np.all(np.mod(x_train_cleaned[:, i][~np.isnan(x_train_cleaned[:, i])], 1) == 0)
+]
+non_integer_columns = [
+    i for i in range(x_train_cleaned.shape[1]) if i not in integer_columns
+]
+assert len(integer_columns) + len(non_integer_columns) == x_train_cleaned.shape[1]
 
+x_train_cleaned_without_nans = nan_imputation.encode_nan_integer_columns(
+    x_train_cleaned, replacement_value="mode"
+)
+x_train_cleaned_without_nans = nan_imputation.encode_nan_continuous_columns(
+    x_train_cleaned_without_nans, replacement_value="mode"
+)
+print("NaN values encoded successfully!")
 
-### Testing imprementation 2
-print("Implementation 2: mean_squared_error_sgd \n")
+assert np.isnan(x_train_cleaned_without_nans).sum() == 0
+assert x_train_cleaned.shape == x_train_cleaned_without_nans.shape
 
-batch_size = 1  # Size of mini-batch for stochastic updates
-
-# Running stochastic gradient descent with MSE
-w_final_sgd, loss_final_sgd = imp.mean_squared_error_sgd(
-    y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
+# Calculate the number of unique values for each integer-only column
+unique_value_counts = np.array(
+    [len(np.unique(x_train_cleaned[:, col])) for col in integer_columns]
 )
 
-print(f"Final weights: {w_final_sgd}")
-print(f"Final loss: {loss_final_sgd}")
+# Define columns to One-Hot-Encode based on the number of unique values
+categorical_treshold = 5
+indexes_categorical_features = [
+    i for i, count in enumerate(unique_value_counts) if count <= categorical_treshold
+]
+# Find indexes of non-categorical features that are not in the categorical features list
+indexes_non_categorical_features = [
+    i for i in range(len(unique_value_counts)) if i not in indexes_categorical_features
+]
+assert len(indexes_categorical_features) + len(indexes_non_categorical_features) == len(
+    unique_value_counts
+)
+assert unique_value_counts.size == len(integer_columns)
 
 
-### Testing implementation 3
-print("Implementation 3: least_squares \n")
-
-# Calculate the least squares solution
-w_optimal, mse = imp.least_squares(y_train.copy(), x_train_cleaned.copy())
-
-print(f"Optimal weights: {w_optimal}")
-print(f"Mean Squared Error: {mse}")
-
-
-### Testing implementation 4
-print("Implementation 4: ridge_regression \n")
-
-# Perform ridge regression
-w_final_rr, loss_final_rr = imp.ridge_regression(
-    y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
+encoded_x_train = one_hot_encoding.binary_encode_columns(
+    x_train_cleaned_without_nans, indexes_categorical_features
 )
 
-print(f"Final weights: {w_final_rr}")
-print(f"Final loss: {loss_final_rr}")
-
-
-### Testing implementation 5
-print("Implementation 5: logistic_regression \n")
-
-# Perform logistic regression
-w_final_lr, loss_final_lr = imp.logistic_regression(
-    y_train.copy(), x_train_cleaned.copy(), initial_w.copy(), max_iters, gamma
+standardized_x_train = standardization.standardize_columns(
+    encoded_x_train, indexes_non_categorical_features
 )
 
-print(f"Final weights: {w_final_lr}")
-print(f"Final loss: {loss_final_lr}")
+#create_csv_submission(ids, y_pred, name)
+create_csv_submission(indexes_non_categorical_features, y_pred, 'submission')
 
-
-### Testing implementation 6
-print("Implementation 6: reg_logistic_regression \n")
-
-# Example usage
-lambda_ = 0.1  # Regularization parameter
-gamma = 0.01  # Learning rate
-
-# Perform regularized logistic regression
-w_final_rlr, loss_final_rlr = imp.reg_logistic_regression(
-    y_train.copy(), x_train_cleaned.copy(), lambda_, initial_w.copy(), max_iters, gamma
-)
-
-print(f"Final weights: {w_final_rlr}")
-print(f"Final loss: {loss_final_rlr}")
+###### a partir de la peut etre pas opti mais standardized_x_train est standardisé et sans NaN....
