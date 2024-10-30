@@ -5,23 +5,27 @@ from helpers_perso.helpers_nan_imputation import (
 )
 
 
-def remove_nan_features(array, min_proportion=0.8):
+def remove_nan_features(X, min_proportion):
     """
     Removes columns containing NaN values from a given array if the proportion of NaNs is greater than min_proportion.
-    Prints the percentage of columns deleted.
+    Prints the percentage of columns deleted and returns the cleaned array along with the indices of deleted columns.
 
     Args:
-        array (numpy.ndarray): The input array to clean.
+        X (numpy.ndarray): The input array to clean.
         min_proportion (float): The minimum proportion of NaNs required to remove a column.
 
     Returns:
-        numpy.ndarray: The cleaned array with NaN-containing columns removed.
+        tuple: A tuple containing:
+            - numpy.ndarray: The cleaned array with NaN-containing columns removed.
+            - list of int: The indices of the columns that were deleted.
     """
+    array = np.copy(X)
     # Calculate the proportion of NaNs in each column
     nan_proportions = np.isnan(array).sum(axis=0) / array.shape[0]
 
     # Identify columns that contain NaN proportions greater than min_proportion
     cols_to_remove = nan_proportions > min_proportion
+    deleted_indices = np.where(cols_to_remove)[0]
 
     # Calculate the percentage of columns to be removed
     percentage_deleted = np.sum(cols_to_remove) / array.shape[1] * 100
@@ -35,10 +39,10 @@ def remove_nan_features(array, min_proportion=0.8):
     print(f"Original shape of x_train: {array.shape}")
     print(f"Cleaned shape of x_train: {cleaned_array.shape}")
 
-    return cleaned_array
+    return cleaned_array, deleted_indices
 
 
-def encode_nan_integer_columns(arr, replacement_value="zero"):
+def encode_nan_integer_columns(X, replacement_value="zero"):
     """
     Encode NaN values in columns that contain only integers and do not contain zeroes.
     If `as_zero` is True, replace NaN values with 0. Otherwise, replace NaN values with N+1,
@@ -54,11 +58,15 @@ def encode_nan_integer_columns(arr, replacement_value="zero"):
     Returns:
         np.ndarray: A 2D NumPy array with NaN values replaced by zeroes or N+1 where applicable.
     """
-
+    arr = np.copy(X)
     count = 0
     # Iterate over each column
     for col_index in range(arr.shape[1]):
         column = arr[:, col_index]
+
+        # Check if the column contains any NaN values
+        if not np.any(np.isnan(column)):
+            continue
 
         # Check if the column contains only integers (ignoring NaN values)
         is_integer_column = np.all(np.isnan(column) | np.equal(np.mod(column, 1), 0))
@@ -67,7 +75,6 @@ def encode_nan_integer_columns(arr, replacement_value="zero"):
         if is_integer_column:
             count += 1
 
-            # If NaN proportion is too high, mark the column for deletion
             if replacement_value == "zero":
                 # Replace NaN values with 0
                 arr[:, col_index] = np.where(np.isnan(column), 0, column)
@@ -90,12 +97,12 @@ def encode_nan_integer_columns(arr, replacement_value="zero"):
                     f"Column {col_index} has been encoded with NaNs as the mode {mode}"
                 )
 
-    print(f"Number of columns encoded: {count}")
+    print(f"Number of integer columns encoded: {count}")
 
     return arr
 
 
-def encode_nan_continuous_columns(arr, replacement_value="zero"):
+def encode_nan_continuous_columns(X, replacement_value="zero"):
     """
     Encode NaN values in columns that contain only integers and do not contain zeroes.
     If `as_zero` is True, replace NaN values with 0. Otherwise, replace NaN values with N+1,
@@ -111,11 +118,16 @@ def encode_nan_continuous_columns(arr, replacement_value="zero"):
     Returns:
         np.ndarray: A 2D NumPy array with NaN values replaced by zeroes or N+1 where applicable.
     """
+    arr = np.copy(X)
 
     count = 0
     # Iterate over each column
     for col_index in range(arr.shape[1]):
         column = arr[:, col_index]
+
+        # Check if the column contains any NaN values
+        if not np.any(np.isnan(column)):
+            continue
 
         # Check if the column contains only integers (ignoring NaN values)
         is_not_integer_column = np.any(~np.isnan(column) & (np.mod(column, 1) != 0))
@@ -145,6 +157,6 @@ def encode_nan_continuous_columns(arr, replacement_value="zero"):
                     f"Column {col_index} has been encoded with NaNs as the binned mode {mode}"
                 )
 
-    print(f"Number of columns encoded: {count}")
+    print(f"Number of non integer columns encoded: {count}")
 
     return arr
