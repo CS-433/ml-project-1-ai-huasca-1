@@ -1,15 +1,64 @@
 import os
-from helpers import *
+from helpers import load_csv_data, create_csv_submission
 import numpy as np
 import matplotlib.pyplot as plt
 from implementations import *
 from helpers_perso import *
 from crossvalidation import *
+from preprocessing.nan_imputation import *
+from preprocessing.one_hot_encoding import *
+from preprocessing.standardization import *
+from predict_labels import predict_classification
+
 
 # Loading the data
 data_path = os.path.join(os.getcwd(), "data", "dataset")
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 print("Data loaded successfully!")
+
+x_train_cleaned, deleted_indices = remove_nan_features(x_train, 0.8)
+adapted_x_test = np.delete(x_test, deleted_indices, axis=1)
+
+
+integer_columns, non_integer_columns = identify_integer_columns(x_train_cleaned)
+assert len(integer_columns) + len(non_integer_columns) == x_train_cleaned.shape[1]
+
+x_train_cleaned_without_nans = encode_nan_integer_columns(x_train_cleaned, replacement_value='mode')
+x_train_cleaned_without_nans = encode_nan_continuous_columns(x_train_cleaned_without_nans, replacement_value='mode')
+assert np.isnan(x_train_cleaned_without_nans).sum() == 0
+assert x_train_cleaned.shape == x_train_cleaned_without_nans.shape
+adapted_x_test_without_nans = encode_nan_integer_columns(adapted_x_test, replacement_value='mode')
+adapted_x_test_without_nans = encode_nan_continuous_columns(adapted_x_test_without_nans, replacement_value='mode')
+assert np.isnan(adapted_x_test_without_nans).sum() == 0
+assert adapted_x_test.shape == adapted_x_test_without_nans.shape
+
+categorical_threshold = 5
+unique_value_counts = np.array([len(np.unique(x_train_cleaned[:, col])) for col in integer_columns])
+indexes_categorical_features = [integer_columns[i] for i, count in enumerate(unique_value_counts) if count <= categorical_threshold]
+indexes_non_categorical_features = [integer_columns[i] for i in range(len(unique_value_counts)) if integer_columns[i] not in indexes_categorical_features]
+assert len(indexes_categorical_features) + len(indexes_non_categorical_features) == len(unique_value_counts)
+assert unique_value_counts.size == len(integer_columns)
+indexes_non_categorical_features.extend(non_integer_columns)
+
+x_standardized = standardize_columns(x_train_cleaned_without_nans, indexes_non_categorical_features)
+x_test_standardized = standardize_columns(adapted_x_test_without_nans, indexes_non_categorical_features)
+
+encoded_x_train, encoded_x_test = consistent_binary_encode(x_standardized, x_test_standardized, indexes_categorical_features)
+
+initial_w = np.zeros(encoded_x_train.shape[1])
+max_iters = 150
+gamma = 0.01
+
+w, loss = mean_squared_error_gd(y_train, encoded_x_train, initial_w, max_iters, gamma)
+
+y_test = predict_classification(encoded_x_test,w)
+
+create_csv_submission(test_ids, y_test, "submission.csv")
+
+
+
+
+
 
 # # Initial weights (can be zeros, random, or some heuristic value)
 # initial_w = np.zeros(x_train.shape[1])
@@ -96,106 +145,4 @@ print("Data loaded successfully!")
 
 # import os
 # os.chdir("..")
-
-from preprocessing import nan_imputation
-from preprocessing import one_hot_encoding
-from preprocessing import standardization
-
-# Clean all arrays by removing columns containing NaN values
-x_train_cleaned = nan_imputation.remove_nan_features(x_train, 0.8)
-print(
-    f"Removed {x_train.shape[1] - x_train_cleaned.shape[1]} columns with more than 80% NaN values."
-)
-
-# Identify columns that only contain integers
-integer_columns = [
-    i
-    for i in range(x_train_cleaned.shape[1])
-    if np.all(np.mod(x_train_cleaned[:, i][~np.isnan(x_train_cleaned[:, i])], 1) == 0)
-]
-non_integer_columns = [
-    i for i in range(x_train_cleaned.shape[1]) if i not in integer_columns
-]
-assert len(integer_columns) + len(non_integer_columns) == x_train_cleaned.shape[1]
-
-x_train_cleaned_without_nans = nan_imputation.encode_nan_integer_columns(
-    x_train_cleaned, replacement_value="mode"
-)
-x_train_cleaned_without_nans = nan_imputation.encode_nan_continuous_columns(
-    x_train_cleaned_without_nans, replacement_value="mode"
-)
-print("NaN values encoded successfully!")
-
-assert np.isnan(x_train_cleaned_without_nans).sum() == 0
-assert x_train_cleaned.shape == x_train_cleaned_without_nans.shape
-
-# Calculate the number of unique values for each integer-only column
-unique_value_counts = np.array(
-    [len(np.unique(x_train_cleaned[:, col])) for col in integer_columns]
-)
-
-# Define columns to One-Hot-Encode based on the number of unique values
-categorical_treshold = 5
-indexes_categorical_features = [
-    i for i, count in enumerate(unique_value_counts) if count <= categorical_treshold
-]
-# Find indexes of non-categorical features that are not in the categorical features list
-indexes_non_categorical_features = [
-    i for i in range(len(unique_value_counts)) if i not in indexes_categorical_features
-]
-assert len(indexes_categorical_features) + len(indexes_non_categorical_features) == len(
-    unique_value_counts
-)
-assert unique_value_counts.size == len(integer_columns)
-
-
-encoded_x_train = one_hot_encoding.binary_encode_columns(
-    x_train_cleaned_without_nans, indexes_categorical_features
-)
-
-standardized_x_train = standardization.standardize_columns(
-    encoded_x_train, indexes_non_categorical_features
-)
-
-###### a partir de la peut etre pas opti mais standardized_x_train est standardisé et sans NaN....
-
-
-
-# Initialize model parameters
-initial_w = np.zeros(standardized_x_train.shape[1])  # Adjust size to match preprocessed data
-max_iters = 1000
-gamma = 0.01  # Learning rate
-
-# Train model with mean squared error gradient descent
-w, _ = mean_squared_error_gd(y_train, standardized_x_train, initial_w, max_iters, gamma)
-
-
-
-
-# Clean and preprocess x_test using the same preprocessing pipeline
-x_test_cleaned = nan_imputation.remove_nan_features(x_test, 0.8)
-x_test_cleaned_without_nans = nan_imputation.encode_nan_integer_columns(
-    x_test_cleaned, replacement_value="mode"
-)
-x_test_cleaned_without_nans = nan_imputation.encode_nan_continuous_columns(
-    x_test_cleaned_without_nans, replacement_value="mode"
-)
-
-encoded_x_test = one_hot_encoding.binary_encode_columns(
-    x_test_cleaned_without_nans, indexes_categorical_features
-)
-
-standardized_x_test = standardization.standardize_columns(
-    encoded_x_test, indexes_non_categorical_features
-)
-
-# Generate predictions on the test set
-y_pred = np.dot(standardized_x_test, w)  # Predict using the learned weights
-y_pred = np.where(y_pred >= 0, 1, -1)  # Convert predictions to 1 or -1 as required
-
-# Create the submission file
-submission_filename = "submission.csv"
-create_csv_submission(test_ids, y_pred, submission_filename)
-print(f"Submission file '{submission_filename}' created successfully!")
-
 
