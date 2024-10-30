@@ -157,7 +157,45 @@ standardized_x_train = standardization.standardize_columns(
     encoded_x_train, indexes_non_categorical_features
 )
 
-#create_csv_submission(ids, y_pred, name)
-create_csv_submission(indexes_non_categorical_features, y_pred, 'submission')
-
 ###### a partir de la peut etre pas opti mais standardized_x_train est standardisé et sans NaN....
+
+
+
+# Initialize model parameters
+initial_w = np.zeros(standardized_x_train.shape[1])  # Adjust size to match preprocessed data
+max_iters = 1000
+gamma = 0.01  # Learning rate
+
+# Train model with mean squared error gradient descent
+w, _ = mean_squared_error_gd(y_train, standardized_x_train, initial_w, max_iters, gamma)
+
+
+
+
+# Clean and preprocess x_test using the same preprocessing pipeline
+x_test_cleaned = nan_imputation.remove_nan_features(x_test, 0.8)
+x_test_cleaned_without_nans = nan_imputation.encode_nan_integer_columns(
+    x_test_cleaned, replacement_value="mode"
+)
+x_test_cleaned_without_nans = nan_imputation.encode_nan_continuous_columns(
+    x_test_cleaned_without_nans, replacement_value="mode"
+)
+
+encoded_x_test = one_hot_encoding.binary_encode_columns(
+    x_test_cleaned_without_nans, indexes_categorical_features
+)
+
+standardized_x_test = standardization.standardize_columns(
+    encoded_x_test, indexes_non_categorical_features
+)
+
+# Generate predictions on the test set
+y_pred = np.dot(standardized_x_test, w)  # Predict using the learned weights
+y_pred = np.where(y_pred >= 0, 1, -1)  # Convert predictions to 1 or -1 as required
+
+# Create the submission file
+submission_filename = "submission.csv"
+create_csv_submission(test_ids, y_pred, submission_filename)
+print(f"Submission file '{submission_filename}' created successfully!")
+
+
