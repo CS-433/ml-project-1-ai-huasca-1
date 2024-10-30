@@ -138,6 +138,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     for iter in range(max_iters):
         # Perform one step of gradient descent
         w, loss_iter = learning_by_gradient_descent(y, tx, w, gamma)
+
         # Log info every 100 iterations
         if iter % 100 == 0:
             print(f"Current iteration={iter}, loss={loss_iter}")
@@ -180,11 +181,9 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         # Update the weights
         w -= gamma * gradient
 
-        # Log info
+        # Log info every 100 iterations
         if n_iter % 100 == 0:
-            print(
-                f"Iteration {n_iter}/{max_iters}, loss={calculate_loss_sigmoid(y, tx, w)}, w={w}"
-            )
+            print(f"Iteration {n_iter}/{max_iters}, loss={calculate_loss_sigmoid(y, tx, w)}, w={w}")
 
     # Compute the final loss (without the regularization term)
     loss = calculate_loss_sigmoid(y, tx, w)
