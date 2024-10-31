@@ -21,8 +21,12 @@ def compute_scores(y, x, w):
 
     # Calculate F1 score components
     true_positives = np.sum((predictions == 1) & (y == 1))
-    false_positives = np.sum((predictions == 1) & (y == 0))
-    false_negatives = np.sum((predictions == 0) & (y == 1))
+    false_positives = np.sum((predictions == 1) & (y == -1))
+    false_negatives = np.sum((predictions == -1) & (y == 1))
+    true_negatives = np.sum((predictions == -1) & (y == -1))
+
+    # Check that all cases add up to the total sample size
+    assert true_positives + false_positives + false_negatives + true_negatives == len(y)
 
     # Avoid division by zero for F1 score
     if true_positives + false_positives == 0 or true_positives + false_negatives == 0:
