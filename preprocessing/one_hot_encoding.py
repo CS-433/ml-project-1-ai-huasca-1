@@ -2,6 +2,7 @@ import numpy as np
 from helpers_perso import *
 from helpers_perso.helpers_nan_imputation import identify_integer_columns
 
+
 def binary_encode_columns(X, column_indices):
     """
     Perform binary encoding on specific columns of a 2D NumPy array.
@@ -52,7 +53,18 @@ def binary_encode_columns(X, column_indices):
 
     return binary_encoded_arr
 
+
 def identify_categorical_columns(X,treshold):
+    """
+    Identify categorical columns in a dataset based on a threshold for unique values.
+    Parameters:
+    X (numpy.ndarray): The input data array where rows are samples and columns are features.
+    treshold (int): The maximum number of unique values a column can have to be considered categorical.
+    Returns:
+    tuple: A tuple containing two lists:
+        - indexes_categorical_features (list): Indices of columns identified as categorical.
+        - indexes_non_categorical_features (list): Indices of columns identified as non-categorical.
+    """
 
     integer_columns, non_integer_columns = identify_integer_columns(X)
 
@@ -71,6 +83,8 @@ def identify_categorical_columns(X,treshold):
     return indexes_categorical_features,indexes_non_categorical_features
 
 import numpy as np
+
+
 
 def binary_encode_column(column, unique_values):
     """
@@ -99,6 +113,8 @@ def binary_encode_column(column, unique_values):
         binary_encoded[i] = np.array(list(np.binary_repr(index, num_bits)), dtype=int)
 
     return binary_encoded
+
+
 
 def consistent_binary_encode(X_train, X_test, categorical_columns):
     """

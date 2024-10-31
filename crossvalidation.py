@@ -3,8 +3,6 @@ from implementations import *
 from helpers_perso import *
 
 
-import numpy as np
-
 def cross_validate(model_fn, X, y, initial_weights=None, k=5, **kwargs):
     """
     Perform k-Fold Cross-Validation on a given model.

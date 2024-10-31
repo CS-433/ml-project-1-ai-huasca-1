@@ -20,6 +20,7 @@ def predict_classification(x_test, w, treshold=0):
     
     return y_test
 
+
 def predict_classification_logistic(x_test, w, treshold=0.5):
     """
     Predict binary classification labels using the weights from a linear regression model.
