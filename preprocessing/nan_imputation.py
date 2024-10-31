@@ -151,10 +151,18 @@ def encode_nan_continuous_columns(X, replacement_value="zero"):
                 )
             elif replacement_value == "mode":
                 # Replace NaN with the binned mode of the column
-                mode = calculate_mode_binned(column)
+                mode = calculate_mode_binned(column,200)
                 arr[:, col_index] = np.where(np.isnan(column), mode, column)
                 print(
                     f"Column {col_index} has been encoded with NaNs as the binned mode {mode}"
+                )
+            elif replacement_value == "median":
+                # Calculate the median of the column, excluding NaN
+                median_value = np.nanmedian(column)
+                # Replace NaN with the median of the column
+                arr[:, col_index] = np.where(np.isnan(column), median_value, column)
+                print(
+                    f"Column {col_index} has been encoded with NaNs as the median {median_value}"
                 )
 
     print(f"Number of non integer columns encoded: {count}")

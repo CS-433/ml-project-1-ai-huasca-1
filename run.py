@@ -17,7 +17,7 @@ data_path = os.path.join(os.getcwd(), "data", "dataset")
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 print("Data loaded successfully!")
 
-x_balanced, y_balanced, deleted_ids = balance_classes(x_train, y_train, 1)
+x_balanced, y_balanced, deleted_ids = balance_classes(x_train, y_train, 1.2)
 
 x_train_cleaned, deleted_indices = remove_nan_features(x_balanced, 0.8)
 adapted_x_test = np.delete(x_test, deleted_indices, axis=1)
@@ -49,14 +49,15 @@ x_test_standardized = standardize_columns(adapted_x_test_without_nans, indexes_n
 encoded_x_train, encoded_x_test = consistent_binary_encode(x_standardized, x_test_standardized, indexes_categorical_features)
 
 initial_w = np.zeros(encoded_x_train.shape[1])
-max_iters = 150
-gamma = 0.001
+max_iters = 300
+gamma = 0.01
 
-w, loss = mean_squared_error_gd(y_balanced, encoded_x_train, initial_w, max_iters, gamma)
+# w, loss = mean_squared_error_gd(y_balanced, encoded_x_train, initial_w, max_iters, gamma)
+w, loss = logistic_regression(y_balanced, encoded_x_train, initial_w, max_iters, gamma)
 
 y_test = predict_classification(encoded_x_test,w)
 
-create_csv_submission(test_ids, y_test, "submission.csv")
+create_csv_submission(test_ids, y_test, "submission_log_reg.csv")
 
 
 

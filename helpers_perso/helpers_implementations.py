@@ -286,3 +286,9 @@ def learning_by_gradient_descent(y, tx, w, gamma):
     loss = calculate_loss_sigmoid(y, tx, w)
 
     return w, loss
+
+def mapping_log_reg(y):
+    y_filtered = y.copy()
+    y_filtered= np.maximum(y_filtered, np.zeros_like(y_filtered))
+
+    return y_filtered
