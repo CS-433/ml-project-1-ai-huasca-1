@@ -1,6 +1,6 @@
 import numpy as np
 
-def predict_classification(x_test, w):
+def predict_classification(x_test, w, treshold=0):
     """
     Predict binary classification labels using the weights from a linear regression model.
 
