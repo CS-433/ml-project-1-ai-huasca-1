@@ -130,8 +130,6 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         w: numpy array of shape (D,), the final weight vector.
         loss: scalar, the final loss value.
     """
-
-    # Initialize weights with the initial guess
     w = initial_w
 
     y = mapping_log_reg(y)
@@ -145,7 +143,6 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         
         print(f"Current iteration={iter}, loss={loss_iter}")
 
-    # Compute the final loss
     loss = calculate_loss_sigmoid(y, tx, w)
 
     return w, loss
@@ -169,7 +166,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         w: The final weight vector.
         loss: The final loss value (without the regularization term).
     """
-    w = initial_w  # Initialize weights
+    w = initial_w
 
     y = mapping_log_reg(y)
 
