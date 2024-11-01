@@ -1,6 +1,18 @@
 import numpy as np
 
 def balance_classes(X, y, ratio=1):
+    """
+    Balances the classes in the dataset by under-sampling the majority class based on the specified ratio.
+    Parameters:
+    X (np.ndarray): The feature matrix.
+    y (np.ndarray): The target vector with class labels.
+    ratio (float, optional): The desired ratio of the number of majority class samples to the number of minority class samples. Default is 1.
+    Returns:
+    tuple: A tuple containing:
+        - np.ndarray: The balanced feature matrix.
+        - np.ndarray: The balanced target vector.
+        - np.ndarray: The indices of the deleted majority class samples.
+    """
     # Identify indices of each class
     class1_ids = np.where(y == -1)[0]
     class2_ids = np.where(y == 1)[0]
