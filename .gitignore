@@ -7,3 +7,6 @@ data/dataset.zip
 
 # MacOS
 .DS_Store
+
+# Submissions
+submissions/*.csv
