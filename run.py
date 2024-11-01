@@ -17,6 +17,49 @@ data_path = os.path.join(os.getcwd(), "data", "dataset")
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 print("Data loaded successfully!")
 
+
+# Define custom NaN handling functions
+def custom_nan_imputation(X, nan_threshold=0.3):
+    """
+    Remove columns with NaN proportions over threshold. Impute columns with <30% NaNs using mean/median.
+    Args:
+        X: np.array, shape (n_samples, n_features)
+        nan_threshold: float, threshold proportion for dropping columns.
+    Returns:
+        X_imputed: np.array, cleaned and imputed version of X
+        retained_columns: list of int, indices of columns retained for test alignment
+    """
+    # 1. Calculate NaN proportions per column
+    nan_proportion = np.isnan(X).mean(axis=0)
+    
+    # 2. Identify columns to remove and retain
+    retain_columns = np.where(nan_proportion < nan_threshold)[0]
+    X_retained = X[:, retain_columns]  # Keep columns below the threshold
+
+    # 3. Impute columns with 10%-30% NaNs
+    for col in range(X_retained.shape[1]):
+        col_nan_prop = np.isnan(X_retained[:, col]).mean()
+        if 0.1 <= col_nan_prop < nan_threshold:
+            # Continuous: Use mean imputation
+            col_mean = np.nanmean(X_retained[:, col])
+            X_retained[np.isnan(X_retained[:, col]), col] = col_mean
+    
+    return X_retained, retain_columns
+
+# Apply NaN handling to training data
+x_train_cleaned, retained_columns = custom_nan_imputation(x_train, nan_threshold=0.3)
+
+# Apply same column removal and imputation strategy to test data
+x_test_cleaned = x_test[:, retained_columns]  # Align columns with training data
+for col in range(x_test_cleaned.shape[1]):
+    if np.isnan(x_test_cleaned[:, col]).any():
+        col_mean = np.nanmean(x_test_cleaned[:, col])
+        x_test_cleaned[np.isnan(x_test_cleaned[:, col]), col] = col_mean
+
+print("Data preprocessing completed!")
+
+
+
 balancing_ratio = 1
 x_balanced, y_balanced, deleted_ids = balance_classes(x_train, y_train, balancing_ratio)
 print(f"Classes balanced successfully! : ratio {balancing_ratio}")
