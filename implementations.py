@@ -148,8 +148,14 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         gamma (float): Learning rate, which controls the step size of each gradient update.
 
     Returns:
-        w: numpy array of shape (D,), the final weight vector.
-        loss: scalar, the final loss value.
+        tuple: A tuple containing:
+            - np.ndarray: The optimized weight vector `w` of shape (D,).
+            - float: The final logistic loss value after convergence.
+
+    Notes:
+        - `mapping_log_reg(y)` may be used to transform `y` to a compatible format if necessary.
+        - Intermediate loss values are printed every 100 iterations for progress tracking.
+        - The logistic loss is calculated based on the sigmoid activation, making it suitable for binary classification.
     """
 
     # Initialize weights with the initial guess
@@ -166,6 +172,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         # Log info every iterations
         print(f"Current iteration={iter}, loss={loss_iter}")
 
+    # Compute the final loss
     loss = calculate_loss_sigmoid(y, tx, w)
 
     return w, loss
