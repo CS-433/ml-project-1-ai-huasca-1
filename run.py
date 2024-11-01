@@ -19,7 +19,7 @@ print("Data loaded successfully!")
 
 x_balanced, y_balanced, deleted_ids = balance_classes(x_train, y_train, 1.3)
 
-x_train_cleaned, deleted_indices = remove_nan_features(x_balanced, 0.8)
+x_train_cleaned, deleted_indices = remove_nan_features(x_balanced, 0.3)
 adapted_x_test = np.delete(x_test, deleted_indices, axis=1)
 
 
