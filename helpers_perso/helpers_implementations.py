@@ -214,10 +214,16 @@ def calculate_loss_sigmoid(y, tx, w):
     # Ensure the number of features matches between tx and w
     assert tx.shape[1] == w.shape[0]
 
+    # Calculate predictions using the sigmoid function
+    predictions = sigmoid(np.dot(tx, w))
+
+    # Clip predictions to avoid log(0) issues
+    predictions = np.clip(predictions, 1e-15, 1 - 1e-15)
+
     # Compute the negative log likelihood loss
     loss = -np.mean(
-        y * np.log(sigmoid(np.dot(tx, w)))  # Contribution of positive class
-        + (1 - y) * np.log(1 - sigmoid(np.dot(tx, w)))  # Contribution of negative class
+        y * np.log(predictions)  # Contribution of positive class
+        + (1 - y) * np.log(1 - predictions)  # Contribution of negative class
     )
     return loss
 
