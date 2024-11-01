@@ -13,9 +13,8 @@ def compute_scores(y, x, w):
     Returns:
         tuple: A tuple containing accuracy and F1 score.
     """
-    # Predict binary classifications based on the weights
     predictions = predict_classification(x, w)
-
+    
     # Calculate accuracy
     accuracy = np.sum(predictions == y) / len(y)
 
