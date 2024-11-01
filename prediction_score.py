@@ -25,6 +25,8 @@ def compute_scores(y, x, w):
     false_negatives = np.sum((predictions == -1) & (y == 1))
     true_negatives = np.sum((predictions == -1) & (y == -1))
 
+    print(f"Correct guesses: {true_positives + true_negatives} on {len(y)} samples")
+
     # Check that all cases add up to the total sample size
     assert true_positives + false_positives + false_negatives + true_negatives == len(y)
 

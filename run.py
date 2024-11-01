@@ -10,17 +10,21 @@ from preprocessing.one_hot_encoding import *
 from preprocessing.standardization import *
 from predict_labels import predict_classification, predict_classification_logistic
 from preprocessing.class_balancing import balance_classes
-
+from preprocessing.remove_highly_correlated_features import remove_highly_correlated_features
 
 # Loading the data
 data_path = os.path.join(os.getcwd(), "data", "dataset")
 x_train, x_test, y_train, train_ids, test_ids = load_csv_data(data_path)
 print("Data loaded successfully!")
 
-x_balanced, y_balanced, deleted_ids = balance_classes(x_train, y_train, 1.3)
+balancing_ratio = 1
+x_balanced, y_balanced, deleted_ids = balance_classes(x_train, y_train, balancing_ratio)
+print(f"Classes balanced successfully! : ratio {balancing_ratio}")
 
-x_train_cleaned, deleted_indices = remove_nan_features(x_balanced, 0.3)
+nan_proportion_to_remove = 0.3
+x_train_cleaned, deleted_indices = remove_nan_features(x_balanced, nan_proportion_to_remove)
 adapted_x_test = np.delete(x_test, deleted_indices, axis=1)
+print(f"NaN features removed successfully! : proportion {nan_proportion_to_remove}")
 
 
 integer_columns, non_integer_columns = identify_integer_columns(x_train_cleaned)
@@ -34,6 +38,7 @@ adapted_x_test_without_nans = encode_nan_integer_columns(adapted_x_test, replace
 adapted_x_test_without_nans = encode_nan_continuous_columns(adapted_x_test_without_nans, replacement_value='mode')
 assert np.isnan(adapted_x_test_without_nans).sum() == 0
 assert adapted_x_test.shape == adapted_x_test_without_nans.shape
+print("Nan values encoded successfully as the mode!")
 
 categorical_threshold = 5
 unique_value_counts = np.array([len(np.unique(x_train_cleaned[:, col])) for col in integer_columns])
@@ -48,10 +53,13 @@ x_test_standardized = standardize_columns(adapted_x_test_without_nans, indexes_n
 
 encoded_x_train, encoded_x_test = consistent_binary_encode(x_standardized, x_test_standardized, indexes_categorical_features)
 
-initial_w = np.zeros(encoded_x_train.shape[1])
-max_iters = 150
-gamma = 0.01
+# Sample usage
+# X_reduced, removed_features = remove_highly_correlated_features(encoded_x_train, threshold=0.8) 
+# final_x_test = np.delete(encoded_x_test, removed_features, axis=1)
 
+initial_w = np.zeros(encoded_x_train.shape[1])
+max_iters = 1000
+gamma = 0.3
 
 # w, loss = mean_squared_error_gd(y_balanced, encoded_x_train, initial_w, max_iters, gamma)
 # y_test = predict_classification(encoded_x_test, w)
