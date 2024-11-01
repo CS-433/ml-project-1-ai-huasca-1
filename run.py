@@ -99,8 +99,8 @@ gamma = 0.3
 lambda_ = 0.1
 
 # Run the model
-w, loss = reg_logistic_regression(
-    y_balanced, encoded_x_train, lambda_, initial_w, max_iters, gamma
+w, loss = logistic_regression(
+    y_balanced, encoded_x_train, initial_w, max_iters, gamma
 )
 
 # Predict the labels
