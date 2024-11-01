@@ -5,18 +5,28 @@ from helpers_perso import *
 
 def cross_validate(model_fn, X, y, initial_weights=None, k=5, **kwargs):
     """
-    Perform k-Fold Cross-Validation on a given model.
+    Perform k-Fold Cross-Validation on a specified model function to evaluate its performance.
+
+    This function divides the data into `k` folds, trains the model on `k-1` folds, and validates it on the remaining fold, 
+    iteratively across all folds. It returns the average validation loss, providing an overall estimate of model performance 
+    and reducing variance associated with a single train/test split.
 
     Args:
-        model_fn (function): The model function from implementations.py to use.
-        X (numpy.ndarray): Input features of shape (N, D).
-        y (numpy.ndarray): Target values of shape (N,).
-        initial_weights (numpy.ndarray): Initial weights to use for models that need it.
-        k (int): Number of folds for cross-validation.
-        **kwargs: Additional arguments for the model function.
+        model_fn (callable): Model function from `implementations.py` that trains the model and returns weights and a loss.
+        X (np.ndarray): Input feature matrix of shape (N, D), where N is the number of samples and D is the number of features.
+        y (np.ndarray): Target values array of shape (N,).
+        initial_weights (np.ndarray, optional): Initial weights array to be used in models that require it, of shape (D,).
+        k (int, optional): Number of folds for cross-validation; defaults to 5.
+        **kwargs: Additional keyword arguments to be passed to `model_fn`.
 
     Returns:
-        float: The average loss across all k folds.
+        float: The average validation loss over all k folds.
+
+    Notes:
+        - The model function should be compatible with inputs `(y_train, X_train, initial_w, **kwargs)`.
+        - For loss calculation, this function uses `compute_loss`, which should be defined (e.g., Mean Squared Error for regression).
+        - For models not requiring initial weights, `initial_weights` can be left as `None`.
+
     """
     # Shuffle the data indices for random folding
     indices = np.arange(len(y))
