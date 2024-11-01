@@ -23,7 +23,7 @@ x_balanced, y_balanced, deleted_ids = balance_classes(x_train, y_train, balancin
 print(f"Classes balanced successfully! : ratio {balancing_ratio}")
 
 # Removing features containing a proportion of NaN values greater than nan_proportion_to_remove
-nan_proportion_to_remove = 0.4
+nan_proportion_to_remove = 0.3
 x_train_cleaned, deleted_indices = remove_nan_features(x_balanced, nan_proportion_to_remove)
 adapted_x_test = np.delete(x_test, deleted_indices, axis=1)
 print(f"NaN features removed successfully! : proportion {nan_proportion_to_remove}")
@@ -66,7 +66,7 @@ gamma = 0.3
 lambda_ = 0.1
 
 # Run the model
-w, loss = reg_logistic_regression(y_balanced, encoded_x_train, initial_w, max_iters, gamma)
+w, loss = reg_logistic_regression(y_balanced, encoded_x_train, lambda_, initial_w, max_iters, gamma)
 
 # Predict the labels
 y_test = predict_classification_logistic(encoded_x_test,w)
