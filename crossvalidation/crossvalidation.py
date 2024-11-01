@@ -28,99 +28,117 @@ def cross_validate(model_fn, X, y, initial_weights=None, k=5, **kwargs):
         - For models not requiring initial weights, `initial_weights` can be left as `None`.
 
     """
-    # Shuffle the data indices for random folding
+    # Generate an array of indices and shuffle them to randomize the data folds
     indices = np.arange(len(y))
     np.random.shuffle(indices)
     
-    # Split indices into k approximately equal folds
+    # Define the size of each fold for splitting the data into k folds
     fold_size = len(y) // k
+    # Create a list of k folds, each containing approximately equal-sized, randomized data indices
     folds = [indices[i * fold_size : (i + 1) * fold_size] for i in range(k)]
     
-    # Handle any remaining samples by adding them to the last fold
+    # Add any remaining data points to the last fold if the data isn't perfectly divisible by k
     if len(y) % k != 0:
         folds[-1] = np.concatenate((folds[-1], indices[k * fold_size:]))
 
+    # Initialize a list to store the loss for each fold
     losses = []
     
-    # Perform k-fold cross-validation
+    # Iterate through each fold, using it as the validation set while the remaining k-1 folds are the training set
     for i in range(k):
-        # Define validation fold
+        # Select indices for the validation set
         val_indices = folds[i]
         
-        # Define training folds by excluding the current validation fold
+        # Concatenate the remaining folds to form the training set
         train_indices = np.concatenate([folds[j] for j in range(k) if j != i])
         
-        # Prepare training and validation data
+        # Extract training and validation data based on the indices
         X_train, y_train = X[train_indices], y[train_indices]
         X_val, y_val = X[val_indices], y[val_indices]
         
-        # Call the model function with or without initial_weights
+        # Call the model function; check if it requires initial weights and pass them if so
         if "initial_w" in model_fn.__code__.co_varnames:
             w, loss = model_fn(y_train, X_train, initial_w=initial_weights, **kwargs)
         else:
             w, loss = model_fn(y_train, X_train, **kwargs)
         
-        # Compute the validation loss and store it
+        # Compute the loss on the validation set using the trained weights
         val_loss = compute_loss(y_val, X_val, w)  # Assuming compute_loss is MSE or another loss function
-        losses.append(val_loss)
+        losses.append(val_loss) # Store the validation loss for this fold
 
-    # Return the average loss across all folds
+    # Calculate and return the average validation loss across all k folds
     return np.mean(losses)
 
 
 def tune_hyperparameters(models, param_grid, X, y, initial_weights, k=5):
     """
-    Tune hyperparameters using grid search and k-fold cross-validation.
+    Tune hyperparameters for multiple models using grid search combined with k-fold cross-validation.
+
+    This function evaluates different hyperparameter combinations for each model in `models` by performing 
+    k-fold cross-validation on all parameter combinations in `param_grid`. For each model, the best-performing 
+    hyperparameters (yielding the lowest cross-validated loss) are selected.
 
     Args:
-        models (dict): Dictionary with model names as keys and functions as values.
-        param_grid (dict): Dictionary of parameter grids for each model.
-        X (numpy.ndarray): Input features.
-        y (numpy.ndarray): Target values.
-        initial_weights (numpy.ndarray): Initial weights to use for all models.
-        k (int): Number of folds for cross-validation.
+        models (dict): Dictionary where keys are model names (str) and values are the corresponding model functions.
+        param_grid (dict): Dictionary of parameter grids, where keys are model names and values are dictionaries of 
+                           parameter names and their possible values as lists.
+        X (np.ndarray): Input features array of shape (N, D), where N is the number of samples and D is the number of features.
+        y (np.ndarray): Target values array of shape (N,).
+        initial_weights (np.ndarray): Initial weights array of shape (D,), used for models that require initialization.
+        k (int, optional): Number of folds for cross-validation; defaults to 5.
 
     Returns:
-        dict: Best hyperparameters and scores for each model.
+        dict: A dictionary containing the best hyperparameters and corresponding scores for each model, 
+              structured as `{model_name: {"best_params": dict, "best_score": float}}`.
+
+    Notes:
+        - The `cross_validate` function is used to compute the cross-validated loss for each parameter combination.
+        - This function supports recursive grid search over multiple parameters and values.
+        - Initial weights are applied uniformly across models; models not requiring initial weights ignore this input.
+        - The tuning process prints the cross-validated score for each parameter combination, tracking progress.
+
     """
-    tuning_results = {}
+    tuning_results = {} # Dictionary to store the best hyperparameters and scores for each model
 
+    # Iterate over each model in the dictionary
     for model_name, model_fn in models.items():
-        print(f"\nTuning {model_name}...")
+        print(f"\nTuning {model_name}...") # Log the model currently being tuned
 
-        model_params = param_grid[model_name]
-        best_score = float('inf')
-        best_params = None
+        model_params = param_grid[model_name] # Get the parameter grid specific to the model
+        best_score = float('inf') # Initialize best score to a very high value (lower scores are better)
+        best_params = None # Variable to store the best parameter set for the model
 
+        # Define recursive function to search over all parameter combinations
         def recursive_grid_search(depth, current_params):
             nonlocal best_score, best_params
-            param_names = list(model_params.keys())
-            param_values = list(model_params.values())
+            param_names = list(model_params.keys()) # List of parameter names
+            param_values = list(model_params.values()) # Corresponding list of values for each parameter
             
-            # If at the last depth, run cross-validation
+            # If all parameters have been assigned a value, evaluate the current combination
             if depth == len(param_names):
-                params = dict(current_params)
+                params = dict(current_params) # Convert list of tuples to dictionary format
                 
                 # Perform cross-validation with the current parameter combination
                 cv_score = cross_validate(model_fn, X=X, y=y, initial_weights=initial_weights, k=k, **params)
                 print(f"Params: {params}, Cross-validated loss: {cv_score}")
 
-                # Check if the current score is better than the best found so far
+                # Update best score and parameters if the current score is lower than previous best
                 if cv_score < best_score:
                     best_score = cv_score
-                    best_params = params
+                    best_params = params # Save the parameters that produced this score
 
                 return
 
-            # Recursively search over the parameter values
+            # Recur over all values for the current parameter
             for value in param_values[depth]:
+                # Pass along the current parameter combination with the new value added
                 recursive_grid_search(depth + 1, current_params + [(param_names[depth], value)])
 
-        # Start the recursive grid search
+        # Start the recursive grid search with an empty parameter list
         recursive_grid_search(0, [])
         
-        # Store the best result for the current model
+        # Store the best parameters and score found for the model
         tuning_results[model_name] = {"best_params": best_params, "best_score": best_score}
-        print(f"Best for {model_name}: Params = {best_params}, Score = {best_score}\n")
+        print(f"Best for {model_name}: Params = {best_params}, Score = {best_score}\n") # Log final best result for the model
 
-    return tuning_results
+    return tuning_results # Return the dictionary containing best hyperparameters and scores for each model
