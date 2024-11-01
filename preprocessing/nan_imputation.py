@@ -7,17 +7,23 @@ from helpers_perso.helpers_nan_imputation import (
 
 def remove_nan_features(X, min_proportion):
     """
-    Removes columns containing NaN values from a given array if the proportion of NaNs is greater than min_proportion.
-    Prints the percentage of columns deleted and returns the cleaned array along with the indices of deleted columns.
+    Removes columns from the array `X` where the proportion of NaN values exceeds `min_proportion`.
+    This function outputs the percentage of columns removed, along with details on the original 
+    and cleaned array shapes, and returns the cleaned array and indices of the deleted columns.
 
     Args:
-        X (numpy.ndarray): The input array to clean.
-        min_proportion (float): The minimum proportion of NaNs required to remove a column.
+        X (numpy.ndarray): The input 2D array to clean by removing columns with high NaN proportions.
+        min_proportion (float): The threshold proportion of NaN values required to remove a column. 
+                                Columns with a NaN proportion exceeding this value will be removed.
 
     Returns:
         tuple: A tuple containing:
-            - numpy.ndarray: The cleaned array with NaN-containing columns removed.
+            - numpy.ndarray: The cleaned array with columns containing excessive NaNs removed.
             - list of int: The indices of the columns that were deleted.
+    
+    Notes:
+        - Prints the percentage of columns deleted based on the `min_proportion` threshold.
+        - Displays the original and new shapes of the array after cleaning.
     """
     array = np.copy(X)
     # Calculate the proportion of NaNs in each column
@@ -44,19 +50,26 @@ def remove_nan_features(X, min_proportion):
 
 def encode_nan_integer_columns(X, replacement_value="zero"):
     """
-    Encode NaN values in columns that contain only integers and do not contain zeroes.
-    If `as_zero` is True, replace NaN values with 0. Otherwise, replace NaN values with N+1,
-    where N is the number of unique values in the column.
-
-    Delete the columns containing a proportion of NaN values greater than `max_proportion`.
+    Encodes NaN values in columns containing only integers (excluding zeroes). Depending on 
+    the specified replacement strategy, NaN values are replaced either by zero, by the count 
+    of unique values plus one (N+1), or by the column mode.
 
     Args:
-        arr (np.ndarray): A 2D NumPy array.
-        max_proportion (float): Maximum proportion of NaN values allowed in a column before it is deleted.
-        as_zero (bool): If True, encode NaNs as zero. If False, encode NaNs as N+1, where N is the number of unique values.
+        X (np.ndarray): A 2D NumPy array where columns containing NaN values may be encoded.
+        replacement_value (str): Strategy for replacing NaN values:
+            - "zero": Replace NaN values with 0.
+            - "upper": Replace NaN values with N+1, where N is the count of unique values 
+                       in the column (excluding NaN).
+            - "mode": Replace NaN values with the most frequent (mode) value in the column.
 
     Returns:
-        np.ndarray: A 2D NumPy array with NaN values replaced by zeroes or N+1 where applicable.
+        np.ndarray: A modified 2D NumPy array where NaN values in integer-only columns have been 
+                    replaced according to the specified `replacement_value`.
+
+    Notes:
+        - Only columns containing integer values (without zeroes) are processed.
+        - Columns without NaN values are not affected.
+        - Prints the number of columns processed and the encoding applied per column.
     """
     arr = np.copy(X)
     count = 0
@@ -104,19 +117,27 @@ def encode_nan_integer_columns(X, replacement_value="zero"):
 
 def encode_nan_continuous_columns(X, replacement_value="zero"):
     """
-    Encode NaN values in columns that contain only integers and do not contain zeroes.
-    If `as_zero` is True, replace NaN values with 0. Otherwise, replace NaN values with N+1,
-    where N is the number of unique values in the column.
-
-    Delete the columns containing a proportion of NaN values greater than `max_proportion`.
+    Encodes NaN values in columns containing continuous data (non-integer values).
+    Based on the specified replacement strategy, NaN values are replaced with zero, 
+    the column mean, the binned mode, or the column median.
 
     Args:
-        arr (np.ndarray): A 2D NumPy array.
-        max_proportion (float): Maximum proportion of NaN values allowed in a column before it is deleted.
-        as_zero (bool): If True, encode NaNs as zero. If False, encode NaNs as N+1, where N is the number of unique values.
+        X (np.ndarray): A 2D NumPy array containing continuous data columns where NaN 
+                        values may be encoded.
+        replacement_value (str): Strategy for replacing NaN values:
+            - "zero": Replace NaN values with 0.
+            - "mean": Replace NaN values with the column mean (ignoring NaNs).
+            - "mode": Replace NaN values with the most frequent (binned mode) value.
+            - "median": Replace NaN values with the column median (ignoring NaNs).
 
     Returns:
-        np.ndarray: A 2D NumPy array with NaN values replaced by zeroes or N+1 where applicable.
+        np.ndarray: A modified 2D NumPy array where NaN values in continuous columns have 
+                    been replaced according to the specified `replacement_value`.
+
+    Notes:
+        - Only columns containing continuous (non-integer) values are processed.
+        - Columns without NaN values are not affected.
+        - Prints the number of columns processed and the encoding method applied per column.
     """
     arr = np.copy(X)
 
