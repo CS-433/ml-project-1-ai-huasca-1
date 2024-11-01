@@ -1,6 +1,7 @@
 import numpy as np
 from predict_labels import predict_classification
 
+
 def compute_scores(y, x, w):
     """
     Compute the accuracy and F1 score for each data point in the dataset.
@@ -14,7 +15,7 @@ def compute_scores(y, x, w):
         tuple: A tuple containing accuracy and F1 score.
     """
     predictions = predict_classification(x, w)
-    
+
     # Calculate accuracy
     accuracy = np.sum(predictions == y) / len(y)
 

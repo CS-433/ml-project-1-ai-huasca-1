@@ -16,7 +16,7 @@ def standardize_columns(arr, indices):
 
     for index in indices:
         column = arr[:, index]
-        
+
         # Compute mean and standard deviation
         mean = np.mean(column)
         std = np.std(column)
@@ -24,7 +24,7 @@ def standardize_columns(arr, indices):
         # Check for zero standard deviation to avoid division by zero
         if std == 0:
             std = 1
-        
+
         # Standardize the column
         arr[:, index] = (column - mean) / std
 

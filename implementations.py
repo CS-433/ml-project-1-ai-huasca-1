@@ -7,7 +7,7 @@ from helpers_perso.helpers_implementations import *
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """Performs linear regression using gradient descent (GD) to minimize the Mean Squared Error (MSE) loss function.
 
-    This function iteratively updates the model parameters `w` by calculating the gradient of the MSE loss with respect to 
+    This function iteratively updates the model parameters `w` by calculating the gradient of the MSE loss with respect to
     `w` and adjusting `w` in the opposite direction of the gradient, effectively minimizing the error over the dataset.
 
     Args:
@@ -65,8 +65,8 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
 def least_squares(y, tx):
     """Computes the optimal weights for linear regression using the least squares method via the normal equations.
 
-    This function solves for the weight vector `w` that minimizes the Mean Squared Error (MSE) loss, leveraging the 
-    closed-form solution: `w = (X^T X)^(-1) X^T y`. This approach is efficient for small to medium-sized datasets 
+    This function solves for the weight vector `w` that minimizes the Mean Squared Error (MSE) loss, leveraging the
+    closed-form solution: `w = (X^T X)^(-1) X^T y`. This approach is efficient for small to medium-sized datasets
     where inversion of `X^T X` is computationally feasible.
 
     Args:
@@ -96,9 +96,9 @@ def least_squares(y, tx):
 def ridge_regression(y, tx, lambda_):
     """Performs ridge regression using the normal equation with L2 regularization.
 
-    This function computes the optimal weights `w` by minimizing the Mean Squared Error (MSE) with an added 
-    L2 regularization term, which helps prevent overfitting and stabilizes the solution. The normal equation 
-    with regularization is given by: `w = (X^T X + lambda_prime * I)^(-1) X^T y`, where `lambda_prime` is 
+    This function computes the optimal weights `w` by minimizing the Mean Squared Error (MSE) with an added
+    L2 regularization term, which helps prevent overfitting and stabilizes the solution. The normal equation
+    with regularization is given by: `w = (X^T X + lambda_prime * I)^(-1) X^T y`, where `lambda_prime` is
     the adjusted regularization parameter.
 
     Args:
@@ -136,8 +136,8 @@ def ridge_regression(y, tx, lambda_):
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Performs binary logistic regression using gradient descent to minimize the logistic loss.
 
-    This function optimizes the logistic regression model parameters `w` by iteratively adjusting them based on 
-    the gradient of the logistic loss function. Logistic regression is useful for binary classification tasks, 
+    This function optimizes the logistic regression model parameters `w` by iteratively adjusting them based on
+    the gradient of the logistic loss function. Logistic regression is useful for binary classification tasks,
     where `y` represents class labels 0 or 1.
 
     Args:
@@ -182,8 +182,8 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Performs regularized logistic regression with L2 regularization using gradient descent.
 
-    This function optimizes the logistic regression model parameters `w` by minimizing the regularized logistic loss, 
-    which includes an L2 penalty term, λ∥w∥². The regularization term helps reduce overfitting by penalizing large weights, 
+    This function optimizes the logistic regression model parameters `w` by minimizing the regularized logistic loss,
+    which includes an L2 penalty term, λ∥w∥². The regularization term helps reduce overfitting by penalizing large weights,
     making this method suitable for high-dimensional or sparse datasets.
 
     Args:
@@ -225,7 +225,9 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
         # Log info every 100 iterations
         if n_iter % 100 == 0:
-            print(f"Iteration {n_iter}/{max_iters}, loss={calculate_loss_sigmoid(y, tx, w)}, w={w}")
+            print(
+                f"Iteration {n_iter}/{max_iters}, loss={calculate_loss_sigmoid(y, tx, w)}, w={w}"
+            )
 
     # Compute the final loss (without the regularization term)
     loss = calculate_loss_sigmoid(y, tx, w)

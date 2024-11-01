@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def balance_classes(X, y, ratio=1):
     """
     Balances the classes in the dataset by under-sampling the majority class based on the specified ratio.
@@ -25,7 +26,9 @@ def balance_classes(X, y, ratio=1):
     nan_proportion = np.isnan(X).mean(axis=1)
 
     # Get the majority class indices sorted by highest NaN proportion
-    majority_class_nan_sorted = majority_class_ids[np.argsort(-nan_proportion[majority_class_ids])]
+    majority_class_nan_sorted = majority_class_ids[
+        np.argsort(-nan_proportion[majority_class_ids])
+    ]
 
     # Determine the number of majority samples to keep based on the ratio
     target_majority_count = int(len(minority_class_ids) * ratio)

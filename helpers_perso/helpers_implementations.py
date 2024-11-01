@@ -293,6 +293,7 @@ def learning_by_gradient_descent(y, tx, w, gamma):
 
     return w, loss
 
+
 def mapping_log_reg(y):
     """
     Maps the input array `y` to a new array where all negative values are replaced with zero.
@@ -302,6 +303,6 @@ def mapping_log_reg(y):
     numpy.ndarray: A new array with the same shape as `y`, where all negative values are replaced with zero.
     """
     y_filtered = y.copy()
-    y_filtered= np.maximum(y_filtered, np.zeros_like(y_filtered))
+    y_filtered = np.maximum(y_filtered, np.zeros_like(y_filtered))
 
     return y_filtered
