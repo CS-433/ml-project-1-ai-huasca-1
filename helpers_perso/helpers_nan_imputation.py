@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def calculate_mode_integer(column):
     """
     Calculate the mode of a column containing only integer values.
@@ -64,6 +65,7 @@ def calculate_mode_binned(column, num_bins=100):
 
     return mode_bin_midpoint
 
+
 def identify_integer_columns(X):
     """
     Identify columns that contain only integers and those that contain non-integer values.
@@ -82,13 +84,15 @@ def identify_integer_columns(X):
     for i in range(X.shape[1]):
         # Remove NaNs and check if all values are integers
         col_without_nan = X[:, i][~np.isnan(X[:, i])]
-        
+
         if np.all(np.mod(col_without_nan, 1) == 0):
             integer_columns.append(i)
         else:
             non_integer_columns.append(i)
 
     assert len(integer_columns) + len(non_integer_columns) == X.shape[1]
-    assert len(set(integer_columns).intersection(non_integer_columns)) == 0, "An element is found in both lists"
+    assert (
+        len(set(integer_columns).intersection(non_integer_columns)) == 0
+    ), "An element is found in both lists"
 
     return integer_columns, non_integer_columns

@@ -3,7 +3,7 @@ from helpers_perso import *
 from helpers_perso.helpers_nan_imputation import identify_integer_columns
 
 
-def identify_categorical_columns(X,treshold):
+def identify_categorical_columns(X, treshold):
     """
     Identify categorical columns in a dataset based on a threshold for unique values.
     Parameters:
@@ -19,20 +19,30 @@ def identify_categorical_columns(X,treshold):
 
     # print(integer_columns)
 
-    unique_value_counts = np.array([len(np.unique(X[:, col])) for col in integer_columns])
+    unique_value_counts = np.array(
+        [len(np.unique(X[:, col])) for col in integer_columns]
+    )
     # print(unique_value_counts)
 
-    indexes_categorical_features = [i for i, count in enumerate(unique_value_counts) if count <= treshold]
+    indexes_categorical_features = [
+        i for i, count in enumerate(unique_value_counts) if count <= treshold
+    ]
 
-    indexes_non_categorical_features = [i for i in range(len(unique_value_counts)) if i not in indexes_categorical_features]
+    indexes_non_categorical_features = [
+        i
+        for i in range(len(unique_value_counts))
+        if i not in indexes_categorical_features
+    ]
 
-    assert len(indexes_categorical_features) + len(indexes_non_categorical_features) == len(unique_value_counts)
+    assert len(indexes_categorical_features) + len(
+        indexes_non_categorical_features
+    ) == len(unique_value_counts)
     assert unique_value_counts.size == len(integer_columns)
 
-    return indexes_categorical_features,indexes_non_categorical_features
+    return indexes_categorical_features, indexes_non_categorical_features
+
 
 import numpy as np
-
 
 
 def binary_encode_column(column, unique_values):
@@ -52,7 +62,7 @@ def binary_encode_column(column, unique_values):
     # Create a binary encoded matrix for this column
     num_bits = int(np.ceil(np.log2(len(unique_values))))
     binary_encoded = np.zeros((len(column), num_bits), dtype=int)
-    
+
     # Encode each value in the column
     for i, value in enumerate(column):
         if value in value_to_index:
@@ -62,7 +72,6 @@ def binary_encode_column(column, unique_values):
         binary_encoded[i] = np.array(list(np.binary_repr(index, num_bits)), dtype=int)
 
     return binary_encoded
-
 
 
 def consistent_binary_encode(X_train, X_test, categorical_columns):
@@ -84,7 +93,7 @@ def consistent_binary_encode(X_train, X_test, categorical_columns):
         if col in categorical_columns:
             # Get unique values from X_train for this column
             unique_values = np.unique(X_train[:, col][~np.isnan(X_train[:, col])])
-            
+
             # Binary encode the column for both X_train and X_test
             X_train_encoded.append(binary_encode_column(X_train[:, col], unique_values))
             X_test_encoded.append(binary_encode_column(X_test[:, col], unique_values))

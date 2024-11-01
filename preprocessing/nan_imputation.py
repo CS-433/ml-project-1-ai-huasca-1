@@ -8,19 +8,19 @@ from helpers_perso.helpers_nan_imputation import (
 def remove_nan_features(X, min_proportion):
     """
     Removes columns from the array `X` where the proportion of NaN values exceeds `min_proportion`.
-    This function outputs the percentage of columns removed, along with details on the original 
+    This function outputs the percentage of columns removed, along with details on the original
     and cleaned array shapes, and returns the cleaned array and indices of the deleted columns.
 
     Args:
         X (numpy.ndarray): The input 2D array to clean by removing columns with high NaN proportions.
-        min_proportion (float): The threshold proportion of NaN values required to remove a column. 
+        min_proportion (float): The threshold proportion of NaN values required to remove a column.
                                 Columns with a NaN proportion exceeding this value will be removed.
 
     Returns:
         tuple: A tuple containing:
             - numpy.ndarray: The cleaned array with columns containing excessive NaNs removed.
             - list of int: The indices of the columns that were deleted.
-    
+
     Notes:
         - Prints the percentage of columns deleted based on the `min_proportion` threshold.
         - Displays the original and new shapes of the array after cleaning.
@@ -50,20 +50,20 @@ def remove_nan_features(X, min_proportion):
 
 def encode_nan_integer_columns(X, replacement_value="zero"):
     """
-    Encodes NaN values in columns containing only integers (excluding zeroes). Depending on 
-    the specified replacement strategy, NaN values are replaced either by zero, by the count 
+    Encodes NaN values in columns containing only integers (excluding zeroes). Depending on
+    the specified replacement strategy, NaN values are replaced either by zero, by the count
     of unique values plus one (N+1), or by the column mode.
 
     Args:
         X (np.ndarray): A 2D NumPy array where columns containing NaN values may be encoded.
         replacement_value (str): Strategy for replacing NaN values:
             - "zero": Replace NaN values with 0.
-            - "upper": Replace NaN values with N+1, where N is the count of unique values 
+            - "upper": Replace NaN values with N+1, where N is the count of unique values
                        in the column (excluding NaN).
             - "mode": Replace NaN values with the most frequent (mode) value in the column.
 
     Returns:
-        np.ndarray: A modified 2D NumPy array where NaN values in integer-only columns have been 
+        np.ndarray: A modified 2D NumPy array where NaN values in integer-only columns have been
                     replaced according to the specified `replacement_value`.
 
     Notes:
@@ -118,11 +118,11 @@ def encode_nan_integer_columns(X, replacement_value="zero"):
 def encode_nan_continuous_columns(X, replacement_value="zero"):
     """
     Encodes NaN values in columns containing continuous data (non-integer values).
-    Based on the specified replacement strategy, NaN values are replaced with zero, 
+    Based on the specified replacement strategy, NaN values are replaced with zero,
     the column mean, the binned mode, or the column median.
 
     Args:
-        X (np.ndarray): A 2D NumPy array containing continuous data columns where NaN 
+        X (np.ndarray): A 2D NumPy array containing continuous data columns where NaN
                         values may be encoded.
         replacement_value (str): Strategy for replacing NaN values:
             - "zero": Replace NaN values with 0.
@@ -131,7 +131,7 @@ def encode_nan_continuous_columns(X, replacement_value="zero"):
             - "median": Replace NaN values with the column median (ignoring NaNs).
 
     Returns:
-        np.ndarray: A modified 2D NumPy array where NaN values in continuous columns have 
+        np.ndarray: A modified 2D NumPy array where NaN values in continuous columns have
                     been replaced according to the specified `replacement_value`.
 
     Notes:
@@ -172,7 +172,7 @@ def encode_nan_continuous_columns(X, replacement_value="zero"):
                 )
             elif replacement_value == "mode":
                 # Replace NaN with the binned mode of the column
-                mode = calculate_mode_binned(column,200)
+                mode = calculate_mode_binned(column, 200)
                 arr[:, col_index] = np.where(np.isnan(column), mode, column)
                 print(
                     f"Column {col_index} has been encoded with NaNs as the binned mode {mode}"
