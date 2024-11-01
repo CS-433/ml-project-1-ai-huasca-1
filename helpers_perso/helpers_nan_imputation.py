@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def calculate_mode_integer(column):
     """
     Calculate the mode of a column containing only integer values.
